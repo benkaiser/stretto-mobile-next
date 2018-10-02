@@ -1,0 +1,41 @@
+import React from 'react';
+import { StyleSheet, FlatList, Text, View } from 'react-native';
+import { ListItem } from 'react-native-elements'
+import Expo from 'expo';
+import DataService from './services/dataService';
+
+export default class Playlist extends React.Component {
+  static navigationOptions = {
+    title: 'Playlists',
+  };
+
+  constructor(props) {
+    super();
+    this._data = props.navigation.getParam('data');
+  }
+
+  render() {
+    return (
+      <View style={styles.container}>
+        <FlatList
+          data={this._data.playlists}
+          keyExtractor={(item) => item.title}
+          renderItem={({item}) => <ListItem key={item.title} title={item.title} />}
+          style={styles.list}
+        />
+      </View>
+    );
+  }
+}
+
+const styles = StyleSheet.create({
+  container: {
+    flex: 1,
+    backgroundColor: '#fff',
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  list: {
+    width: '100%'
+  }
+});
