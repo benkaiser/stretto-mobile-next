@@ -35,13 +35,15 @@ export default class DataService {
   }
 
   static _getData() {
-    console.log('fetching data');
     return fetch(Config.BASE_URL + '/latestdata', {
       credentials: 'same-origin',
       method: 'GET'
     })
     .then(Utilities.fetchToJson)
     .then((data) => {
+      data.playlists = data.playlists.sort((a, b) => {
+        return a.editable >= b.editable || a.title > b.title;
+      });
       return data;
       // this._setLocalData(data.songs || [], data.playlists || []);
       // this._updateLatestVersion(data.version);

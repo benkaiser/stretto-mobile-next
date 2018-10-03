@@ -70,8 +70,6 @@ export default class Login extends React.Component {
   }
 
   _authServerLoadData(credentials) {
-    console.log('got to _authServerLoadData');
-    console.log(credentials);
     this.setState({
       isLoading: true,
       loadingText: 'Loading Stretto data'
