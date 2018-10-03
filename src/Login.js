@@ -76,7 +76,7 @@ export default class Login extends React.Component {
     });
     return DataService.getData(credentials)
     .then(data => {
-      this.props.navigation.replace('Playlist', {
+      this.props.navigation.replace('Playlists', {
         data: data
       });
     }).catch((error) => {
