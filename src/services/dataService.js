@@ -50,9 +50,6 @@ export default class DataService {
     })
     .catch((error) => {
       console.log('landed in error');
-      error.text.then(errorText => {
-        console.log(errorText)
-      });
       console.log(error);
     });
   }

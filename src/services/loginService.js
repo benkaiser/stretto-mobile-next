@@ -1,5 +1,4 @@
 import { AsyncStorage } from "react-native"
-import Config from '../config';
 import Utilities from '../utilities';
 
 const ANDROID_CLIENT_ID = '335415163955-etr0oh4paravsga46ldik5hhmlv18g7h.apps.googleusercontent.com';
@@ -33,9 +32,9 @@ class LoginService {
 
   login() {
     return Expo.Google.logInAsync({
-      androidClientId: "335415163955-etr0oh4paravsga46ldik5hhmlv18g7h.apps.googleusercontent.com",
-      iosClientId: "NOT_IMPLEMENTED",
-      scopes: ['profile', 'email']
+      androidClientId: ANDROID_CLIENT_ID,
+      iosClientId: IOS_CLIENT_ID,
+      scopes
     }).then((result) => {
       if (!result || !result.idToken || !result.user || !result.user.email) {
         throw new Error('unable to login');

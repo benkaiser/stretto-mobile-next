@@ -6,14 +6,14 @@ import {
   Text,
   View
 } from 'react-native';
-import Expo from 'expo';
 import DataService from './services/dataService';
 import LoginService from './services/loginService';
+import BaseView from './BaseView';
 
-export default class Login extends React.Component {
-  static navigationOptions = {
+export default class Login extends BaseView {
+  static navigationOptions = { ...BaseView.navigationOptions, ...{
     title: 'Login',
-  };
+  }};
 
   constructor() {
     super();
@@ -37,7 +37,7 @@ export default class Login extends React.Component {
     });
   }
 
-  render() {
+  renderInternal() {
     return (
       <View style={styles.container}>
         { this.state.loading ? this._loadingView() : this._loginView() }

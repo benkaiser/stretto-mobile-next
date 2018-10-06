@@ -1,13 +1,12 @@
 import React from 'react';
-import { StyleSheet, FlatList, Text, View } from 'react-native';
-import { ListItem } from 'react-native-elements'
-import Expo from 'expo';
-import DataService from './services/dataService';
+import { StyleSheet, FlatList, Text, TouchableHighlight, View } from 'react-native';
+import { ListItem } from 'react-native-material-ui';
+import BaseView from './BaseView';
 
-export default class Playlist extends React.Component {
-  static navigationOptions = ({ navigation }) => ({
+export default class Playlist extends BaseView {
+  static navigationOptions = ({ navigation }) => ({ ...BaseView.navigationOptions, ...{
     title: `${navigation.state.params.item.title}`
-  });
+  }});
 
   constructor(props) {
     super();
@@ -18,7 +17,7 @@ export default class Playlist extends React.Component {
     }).filter(item => !!item);
   }
 
-  render() {
+  renderInternal() {
     return (
       <View style={styles.container}>
         <FlatList
@@ -27,8 +26,12 @@ export default class Playlist extends React.Component {
           renderItem={({item}) =>
             <ListItem
               key={item.title}
+              divider
               onPress={() => this._itemClick.bind(this, item)}
-              title={item.title} />
+              centerElement={{
+                primaryText: item.title,
+              }}
+            />
           }
           style={styles.list}
         />

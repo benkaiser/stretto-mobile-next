@@ -1,34 +1,41 @@
 import React from 'react';
-import { StyleSheet, FlatList, Text, View } from 'react-native';
-import { ListItem } from 'react-native-elements'
-import Expo from 'expo';
-import DataService from './services/dataService';
+import { StyleSheet, FlatList, Text, TouchableHighlight, View } from 'react-native';
+import { ListItem } from 'react-native-material-ui';
+import BaseView from './BaseView';
 
-export default class Playlists extends React.Component {
-  static navigationOptions = {
+export default class Playlists extends BaseView {
+  static navigationOptions = { ...BaseView.navigationOptions, ...{
     title: 'Playlists',
-  };
+  }};
 
   constructor(props) {
     super();
     this._data = props.navigation.getParam('data');
   }
 
-  render() {
+  renderInternal() {
     return (
       <View style={styles.container}>
         <FlatList
           data={this._data.playlists}
           keyExtractor={(item) => item.title}
-          renderItem={({item}) =>
-            <ListItem
-              key={item.title}
-              onPress={this._itemClick.bind(this, item)}
-              title={item.title} />
-          }
+          renderItem={this._renderListItem.bind(this)}
           style={styles.list}
         />
       </View>
+    );
+  }
+
+  _renderListItem({item}) {
+    return (
+      <ListItem
+        key={item.title}
+        divider
+        centerElement={{
+          primaryText: item.title,
+        }}
+        onPress={this._itemClick.bind(this, item)}
+      />
     );
   }
 
