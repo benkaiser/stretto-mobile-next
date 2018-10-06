@@ -1,6 +1,6 @@
 const config = {
   allEnvs: {
-
+    STREAMER_URL: 'https://streamer.kaiserapps.com'
   },
   development: {
     BASE_URL: 'http://192.168.43.166:3000'

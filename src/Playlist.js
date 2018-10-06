@@ -27,7 +27,7 @@ export default class Playlist extends BaseView {
             <ListItem
               key={item.title}
               divider
-              onPress={() => this._itemClick.bind(this, item)}
+              onPress={this._itemClick.bind(this, item)}
               centerElement={{
                 primaryText: item.title,
               }}
@@ -40,7 +40,10 @@ export default class Playlist extends BaseView {
   }
 
   _itemClick(item) {
-
+    this.props.navigation.push('Track', {
+      data: this._data,
+      item: item
+    });
   }
 }
 

@@ -2,6 +2,7 @@ import { createStackNavigator } from 'react-navigation';
 import Login from './Login';
 import Playlists from './Playlists';
 import Playlist from './Playlist';
+import Track from './Track';
 
 // import Reactotron, { networking } from 'reactotron-react-native';
 // Reactotron
@@ -19,6 +20,9 @@ export default createStackNavigator({
   },
   Playlist: {
     screen: Playlist
+  },
+  Track: {
+    screen: Track
   }
 }, {
   initialRouteName: 'Login'
