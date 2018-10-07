@@ -1,8 +1,7 @@
 import React from 'react';
 import { StyleSheet, Image, Text, View } from 'react-native';
-import { Audio } from 'expo';
 import BaseView from './BaseView';
-import Config from './config';
+import Player from './services/player';
 
 export default class Track extends BaseView {
   static navigationOptions = ({ navigation }) => ({ ...BaseView.navigationOptions, ...{
@@ -17,28 +16,7 @@ export default class Track extends BaseView {
   }
 
   componentDidMount() {
-    Audio.setAudioModeAsync({
-      allowsRecordingIOS: false,
-      interruptionModeIOS: Audio.INTERRUPTION_MODE_IOS_DO_NOT_MIX,
-      playsInSilentModeIOS: true,
-      shouldDuckAndroid: true,
-      interruptionModeAndroid: Audio.INTERRUPTION_MODE_ANDROID_DO_NOT_MIX,
-      playThroughEarpieceAndroid: false,
-    }).then(() => {
-      Audio.Sound.create(
-        { uri: Config.STREAMER_URL + '/youtube/' + this._item.id.replace('y_', '') },
-        { shouldPlay: true },
-        this._onPlaybackStatusUpdate
-      ).then(({ sound }) => this._sound = sound);
-    })
-  }
-
-  componentWillUnmount() {
-    this._sound && this._sound.stopAsync();
-  }
-
-  _onPlaybackStatusUpdate(status) {
-    // console.log(status);
+    Player.playSong(this._item);
   }
 
   renderInternal() {
@@ -51,10 +29,6 @@ export default class Track extends BaseView {
         />
       </View>
     );
-  }
-
-  _itemClick(item) {
-
   }
 }
 
