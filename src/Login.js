@@ -6,6 +6,7 @@ import {
   Text,
   View
 } from 'react-native';
+import { Updates } from 'expo';
 import DataService from './services/dataService';
 import LoginService from './services/loginService';
 import BaseView from './BaseView';
@@ -41,7 +42,10 @@ export default class Login extends BaseView {
     return (
       <View style={styles.container}>
         { this.state.loading ? this._loadingView() : this._loginView() }
-
+        <Button
+          title="Reload"
+          onPress={this._onReload.bind(this)}
+        />
       </View>
     );
   }
@@ -67,6 +71,10 @@ export default class Login extends BaseView {
   _onLoginPressed() {
     LoginService.login()
     .then(this._authServerLoadData.bind(this));
+  }
+
+  _onReload() {
+    Updates.reload();
   }
 
   _authServerLoadData(credentials) {

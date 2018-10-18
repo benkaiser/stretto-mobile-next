@@ -2106,6 +2106,10 @@ expo@^30.0.1:
     uuid-js "^0.7.5"
     whatwg-fetch "^2.0.4"
 
+expokit@1.7.1:
+  version "1.7.1"
+  resolved "https://registry.yarnpkg.com/expokit/-/expokit-1.7.1.tgz#bf9922bdcb6bc54b47752d26761885b46e18ede1"
+
 extend-shallow@^1.1.2:
   version "1.1.4"
   resolved "https://registry.yarnpkg.com/extend-shallow/-/extend-shallow-1.1.4.tgz#19d6bf94dfc09d76ba711f39b872d21ff4dd9071"
@@ -3782,6 +3786,10 @@ react-native-gesture-handler@1.0.6:
     invariant "^2.2.2"
     prop-types "^15.5.10"
 
+react-native-google-signin@^1.0.0-rc6:
+  version "1.0.0-rc6"
+  resolved "https://registry.yarnpkg.com/react-native-google-signin/-/react-native-google-signin-1.0.0-rc6.tgz#13278e39551d127008e76a9c6caf532f04246f17"
+
 react-native-maps@0.21.0:
   version "0.21.0"
   resolved "https://registry.yarnpkg.com/react-native-maps/-/react-native-maps-0.21.0.tgz#005f58e93d7623ad59667e8002101970ddf235c2"
@@ -3842,6 +3850,10 @@ react-native-tab-view@^1.0.0:
   resolved "https://registry.yarnpkg.com/react-native-tab-view/-/react-native-tab-view-1.2.0.tgz#0cc26a1c8e49b6c0d58a30363dbbe43954907c31"
   dependencies:
     prop-types "^15.6.1"
+
+react-native-track-player@^0.2.5:
+  version "0.2.5"
+  resolved "https://registry.yarnpkg.com/react-native-track-player/-/react-native-track-player-0.2.5.tgz#b758b527ccf7ba218bcb7e2b3955b441077d6418"
 
 react-native-vector-icons@4.5.0:
   version "4.5.0"

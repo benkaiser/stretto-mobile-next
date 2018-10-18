@@ -24,8 +24,19 @@
       "**/*"
     ],
     "ios": {
-      "supportsTablet": true
+      "supportsTablet": true,
+      "bundleIdentifier": "com.kaiserapps.stretto"
     },
-    "githubUrl": "https://github.com/benkaiser/stretto-mobile-next"
+    "android": {
+      "package": "com.kaiserapps.stretto",
+      "publishBundlePath": "android/app/src/main/assets/shell-app.bundle",
+      "publishManifestPath": "android/app/src/main/assets/shell-app-manifest.json"
+    },
+    "githubUrl": "https://github.com/benkaiser/stretto-mobile-next",
+    "isDetached": true,
+    "detach": {
+      "androidExpoViewUrl": "https://s3.amazonaws.com/exp-exponent-view-code/android-v2.8.1-sdk30.0.0-271c32ab-0715-4dfb-8270-ecead3679bb4.tar.gz"
+    },
+    "scheme": "expfbc9b0cfe9364e8a804c1350a82725fb"
   }
 }

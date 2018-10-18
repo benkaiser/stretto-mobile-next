@@ -1,7 +1,9 @@
 import { AsyncStorage } from "react-native"
+import { GoogleSignin } from 'react-native-google-signin';
 import Utilities from '../utilities';
 
 const ANDROID_CLIENT_ID = '335415163955-etr0oh4paravsga46ldik5hhmlv18g7h.apps.googleusercontent.com';
+const SERVER_CLIENT_ID = 'AIzaSyDpHSAR8sQwz-2GRA8KUtIhDVC4BdcTyDs';
 const IOS_CLIENT_ID = 'NOT_IMPLEMENTED';
 const scopes = ['profile', 'email'];
 
@@ -31,14 +33,19 @@ class LoginService {
   }
 
   login() {
-    return Expo.Google.logInAsync({
-      androidClientId: ANDROID_CLIENT_ID,
-      iosClientId: IOS_CLIENT_ID,
+    console.log('configure...');
+    GoogleSignin.configure({
+      webClientId: SERVER_CLIENT_ID,
       scopes
-    }).then((result) => {
+    })
+    console.log('signing in...');
+    return GoogleSignin.signIn()
+    .then((result) => {
+      console.log(result);
       if (!result || !result.idToken || !result.user || !result.user.email) {
         throw new Error('unable to login');
       }
+      console.log(result);
       this._userInfo = {
         email: result.user.email,
         id_token: result.idToken,
@@ -46,7 +53,10 @@ class LoginService {
       };
       AsyncStorage.setItem('USER_INFO', JSON.stringify(this._userInfo));
       return this._userDataResponse();
-    });
+    }).catch((error) => {
+      console.log('Unable to auth with Google');
+      console.log(error);
+    })
   }
 
   _userDataResponse() {
