@@ -2,6 +2,7 @@ import React from 'react';
 import {
   ActivityIndicator,
   Button,
+  Linking,
   StyleSheet,
   Text,
   View
@@ -22,19 +23,28 @@ export default class Login extends BaseView {
       loading: true,
       loadingText: 'Checking login status...'
     };
-    LoginService.checkLogin().then(credentials => {
-      if (credentials) {
-        this._authServerLoadData(credentials);
+  }
+
+  componentDidMount() {
+    Linking.getInitialURL().then((url) => {
+      if (url && url.split('://')[1]) {
+        console.log('Initial url is: ' + url);
       } else {
-        this.setState({
-          loading: false
+        LoginService.checkLogin().then(credentials => {
+          if (credentials) {
+            this._authServerLoadData(credentials);
+          } else {
+            this.setState({
+              loading: false
+            });
+          }
+        }).catch(error => {
+          console.log(error);
+          this.setState({
+            loading: false
+          });
         });
       }
-    }).catch(error => {
-      console.log(error);
-      this.setState({
-        loading: false
-      });
     });
   }
 
@@ -88,6 +98,9 @@ export default class Login extends BaseView {
         data: data
       });
     }).catch((error) => {
+      this.setState({
+        loading: false
+      });
       console.log(error);
     });
   }

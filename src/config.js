@@ -3,10 +3,15 @@ const config = {
     STREAMER_URL: 'https://streamer.kaiserapps.com'
   },
   development: {
-    BASE_URL: 'http://192.168.43.166:3000'
+    BASE_URL: 'http://192.168.0.139:3000'
   },
   production: {
     BASE_URL: 'https://next.kaiserapps.com'
   }
 };
+if (__DEV__) {
+  console.log('In DEV!');
+} else {
+  console.log('No Dev!');
+}
 export default (__DEV__ ? { ...config.allEnvs, ...config.development } : { ...config.allEnvs, ...config.production });

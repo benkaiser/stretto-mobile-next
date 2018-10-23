@@ -1,4 +1,4 @@
-import Config from '../config';
+import Config from 'react-native-config'
 import Utilities from '../utilities';
 
 export default class DataService {
@@ -28,9 +28,6 @@ export default class DataService {
       if (!data.success) {
         throw new Error('unable to login to stretto server');
       }
-    })
-    .catch((error) => {
-      console.log(error);
     });
   }
 

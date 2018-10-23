@@ -76,19 +76,24 @@
       android:configChanges="keyboard|keyboardHidden|orientation|screenSize"
       android:theme="@style/Theme.Exponent.Splash"
       android:windowSoftInputMode="adjustResize">
-      <intent-filter>
-        <data android:scheme="expfbc9b0cfe9364e8a804c1350a82725fb"/>
+      <!--<intent-filter>-->
+        <!--<data android:scheme="expfbc9b0cfe9364e8a804c1350a82725fb"/>-->
 
-        <action android:name="android.intent.action.VIEW"/>
+        <!--<action android:name="android.intent.action.VIEW"/>-->
 
-        <category android:name="android.intent.category.DEFAULT"/>
-        <category android:name="android.intent.category.BROWSABLE"/>
-      </intent-filter>
+        <!--<category android:name="android.intent.category.DEFAULT"/>-->
+        <!--<category android:name="android.intent.category.BROWSABLE"/>-->
+      <!--</intent-filter>-->
       <intent-filter>
         <action android:name="android.intent.action.MAIN"/>
-
         <category android:name="android.intent.category.LAUNCHER"/>
       </intent-filter>
+        <intent-filter>
+            <action android:name="android.intent.action.VIEW" />
+            <category android:name="android.intent.category.DEFAULT" />
+            <category android:name="android.intent.category.BROWSABLE" />
+            <data android:scheme="com.kaiserapps.stretto" />
+        </intent-filter>
       <!-- ADD DETACH APP SPECIFIC INTENT FILTERS -->
     </activity>
 
@@ -173,7 +178,7 @@
             <action android:name="android.intent.action.VIEW" />
             <category android:name="android.intent.category.DEFAULT" />
             <category android:name="android.intent.category.BROWSABLE" />
-            <data android:scheme="expo.modules.payments.stripe.05db8bf5-e0c7-4a0e-bbac-f7a887a747ca" />
+            <data android:scheme="expo.modules.payments.stripe.de7d1d32-be4a-4f5b-964e-45f5b7f6449a" />
         </intent-filter>
     </activity>
     <!-- Versioned Activity for Stripe -->
@@ -316,7 +321,7 @@
     <!-- The Facebook SDK runs FacebookInitProvider on startup and crashes if there isn't an ID here -->
     <meta-data android:name="com.facebook.sdk.ApplicationId" android:value="fb0"/>
 
-    <meta-data android:name="standaloneStripeScheme" android:value="05db8bf5-e0c7-4a0e-bbac-f7a887a747ca" />
+    <meta-data android:name="standaloneStripeScheme" android:value="de7d1d32-be4a-4f5b-964e-45f5b7f6449a" />
   </application>
 
 </manifest>

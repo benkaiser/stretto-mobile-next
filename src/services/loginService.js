@@ -1,11 +1,8 @@
 import { AsyncStorage } from "react-native"
-import { GoogleSignin } from 'react-native-google-signin';
+import { google } from 'react-native-simple-auth';
 import Utilities from '../utilities';
 
-const ANDROID_CLIENT_ID = '335415163955-etr0oh4paravsga46ldik5hhmlv18g7h.apps.googleusercontent.com';
-const SERVER_CLIENT_ID = 'AIzaSyDpHSAR8sQwz-2GRA8KUtIhDVC4BdcTyDs';
-const IOS_CLIENT_ID = 'NOT_IMPLEMENTED';
-const scopes = ['profile', 'email'];
+const CLIENT_ID = '335415163955-95tkeeqa5gbaj73jorhus66kqmnnunnr.apps.googleusercontent.com';
 
 class LoginService {
   checkLogin() {
@@ -16,7 +13,7 @@ class LoginService {
         return fetch('https://www.googleapis.com/oauth2/v4/token', {
           method: 'POST',
           body: JSON.stringify({
-            client_id: ANDROID_CLIENT_ID,
+            client_id: CLIENT_ID,
             refresh_token: this._userInfo.refresh_token,
             grant_type: 'refresh_token'
           })
@@ -33,24 +30,21 @@ class LoginService {
   }
 
   login() {
-    console.log('configure...');
-    GoogleSignin.configure({
-      webClientId: SERVER_CLIENT_ID,
-      scopes
+
+    return google({
+      appId: CLIENT_ID,
+      callback: 'com.kaiserapps.stretto:/oauth2redirect'
     })
-    console.log('signing in...');
-    return GoogleSignin.signIn()
     .then((result) => {
-      console.log(result);
-      if (!result || !result.idToken || !result.user || !result.user.email) {
+      if (!result || !result.credentials.id_token || !result.credentials.refresh_token || !result.user.email) {
         throw new Error('unable to login');
       }
-      console.log(result);
       this._userInfo = {
         email: result.user.email,
-        id_token: result.idToken,
-        refresh_token: result.refreshToken
+        id_token: result.credentials.id_token,
+        refresh_token: result.credentials.refresh_token
       };
+      console.log(this._userInfo);
       AsyncStorage.setItem('USER_INFO', JSON.stringify(this._userInfo));
       return this._userDataResponse();
     }).catch((error) => {

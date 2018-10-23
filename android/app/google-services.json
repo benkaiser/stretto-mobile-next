@@ -1,50 +1,55 @@
 {
   "project_info": {
-    "project_id": "exponent-5dd6d",
-    "project_number": "367315174693",
-    "name": "Exponent Play Services"
+    "project_number": "335415163955",
+    "firebase_url": "https://github-stretto-next.firebaseio.com",
+    "project_id": "github-stretto-next",
+    "storage_bucket": "github-stretto-next.appspot.com"
   },
   "client": [
     {
       "client_info": {
-        "mobilesdk_app_id": "1:367315174693:android:f968efbb41d1fa7a",
-        "client_id": "android:host.exp.exponent",
-        "client_type": 1,
+        "mobilesdk_app_id": "1:335415163955:android:f82d6464bd7cb15e",
         "android_client_info": {
-          "package_name": "com.kaiserapps.stretto",
-          "certificate_hash": ""
+          "package_name": "com.kaiserapps.stretto"
         }
       },
-      "oauth_client": [],
+      "oauth_client": [
+        {
+          "client_id": "335415163955-95tkeeqa5gbaj73jorhus66kqmnnunnr.apps.googleusercontent.com",
+          "client_type": 1,
+          "android_info": {
+            "package_name": "com.kaiserapps.stretto",
+            "certificate_hash": "892b2b46907b26d3e729829afce15446b9947450"
+          }
+        },
+        {
+          "client_id": "335415163955-7tgnki4fb8qtg9p6f6ek3ef97ta8cekf.apps.googleusercontent.com",
+          "client_type": 3
+        }
+      ],
       "api_key": [
         {
-          "current_key": ""
+          "current_key": "AIzaSyCOvdj_ofHI_KFlC_Xa_L4H2QjPO-v1GKU"
         }
       ],
       "services": {
         "analytics_service": {
-          "status": 2,
-          "analytics_property": {
-            "tracking_id": "UA-76673608-1"
-          }
-        },
-        "cloud_messaging_service": {
-          "status": 2,
-          "apns_config": []
+          "status": 1
         },
         "appinvite_service": {
-          "status": 1,
-          "other_platform_oauth_client": []
-        },
-        "google_signin_service": {
-          "status": 1
+          "status": 2,
+          "other_platform_oauth_client": [
+            {
+              "client_id": "335415163955-7tgnki4fb8qtg9p6f6ek3ef97ta8cekf.apps.googleusercontent.com",
+              "client_type": 3
+            }
+          ]
         },
         "ads_service": {
-          "status": 1
+          "status": 2
         }
       }
     }
   ],
-  "client_info": [],
-  "ARTIFACT_VERSION": "1"
+  "configuration_version": "1"
 }

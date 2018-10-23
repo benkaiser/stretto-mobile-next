@@ -10,8 +10,7 @@ import expolib_v1.okhttp3.OkHttpClient;
 
 // Needed for `react-native link`
 // import com.facebook.react.ReactApplication;
-import co.apptailor.googlesignin.RNGoogleSigninPackage;
-import guichaguri.trackplayer.TrackPlayer;
+import com.guichaguri.trackplayer.TrackPlayer;
 
 public class MainApplication extends ExpoApplication {
 
@@ -28,7 +27,6 @@ public class MainApplication extends ExpoApplication {
 
         // Needed for `react-native link`
         // new MainReactPackage(),
-            new RNGoogleSigninPackage(),
             new TrackPlayer()
     );
   }

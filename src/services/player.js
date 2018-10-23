@@ -1,5 +1,5 @@
 import { Audio } from 'expo';
-import Config from '../config';
+import Config from 'react-native-config';
 
 class Player {
   constructor() {

@@ -800,6 +800,12 @@ babel-plugin-module-resolver@^2.3.0, babel-plugin-module-resolver@^2.7.1:
     glob "^7.1.1"
     resolve "^1.2.0"
 
+babel-plugin-ramda-patch@1.1.6:
+  version "1.1.6"
+  resolved "https://registry.yarnpkg.com/babel-plugin-ramda-patch/-/babel-plugin-ramda-patch-1.1.6.tgz#0303003aca2ebb4e610236caed498e3b9001f9ee"
+  dependencies:
+    ramda "^0.19.1"
+
 babel-plugin-react-transform@2.0.2:
   version "2.0.2"
   resolved "https://registry.yarnpkg.com/babel-plugin-react-transform/-/babel-plugin-react-transform-2.0.2.tgz#515bbfa996893981142d90b1f9b1635de2995109"
@@ -946,7 +952,7 @@ babel-plugin-transform-es2015-literals@^6.5.0, babel-plugin-transform-es2015-lit
   dependencies:
     babel-runtime "^6.22.0"
 
-babel-plugin-transform-es2015-modules-commonjs@6.x, babel-plugin-transform-es2015-modules-commonjs@^6.5.0, babel-plugin-transform-es2015-modules-commonjs@^6.8.0:
+babel-plugin-transform-es2015-modules-commonjs@6.x, babel-plugin-transform-es2015-modules-commonjs@^6.18.0, babel-plugin-transform-es2015-modules-commonjs@^6.5.0, babel-plugin-transform-es2015-modules-commonjs@^6.8.0:
   version "6.26.2"
   resolved "https://registry.yarnpkg.com/babel-plugin-transform-es2015-modules-commonjs/-/babel-plugin-transform-es2015-modules-commonjs-6.26.2.tgz#58a793863a9e7ca870bdc5a881117ffac27db6f3"
   dependencies:
@@ -1048,7 +1054,7 @@ babel-plugin-transform-object-assign@^6.5.0:
   dependencies:
     babel-runtime "^6.22.0"
 
-babel-plugin-transform-object-rest-spread@^6.20.2, babel-plugin-transform-object-rest-spread@^6.5.0, babel-plugin-transform-object-rest-spread@^6.8.0:
+babel-plugin-transform-object-rest-spread@^6.20.2, babel-plugin-transform-object-rest-spread@^6.22.0, babel-plugin-transform-object-rest-spread@^6.5.0, babel-plugin-transform-object-rest-spread@^6.8.0:
   version "6.26.0"
   resolved "https://registry.yarnpkg.com/babel-plugin-transform-object-rest-spread/-/babel-plugin-transform-object-rest-spread-6.26.0.tgz#0f36692d50fef6b7e2d4b3ac1478137a963b7b06"
   dependencies:
@@ -2437,6 +2443,10 @@ has-values@^1.0.0:
     is-number "^3.0.0"
     kind-of "^4.0.0"
 
+hmacsha1@^1.0.0:
+  version "1.0.0"
+  resolved "https://registry.yarnpkg.com/hmacsha1/-/hmacsha1-1.0.0.tgz#c1b7ae03a4ea116348090af14f8148c12938a917"
+
 hoist-non-react-statics@^2.2.0, hoist-non-react-statics@^2.3.1, hoist-non-react-statics@^2.5.0, hoist-non-react-statics@^2.5.5:
   version "2.5.5"
   resolved "https://registry.yarnpkg.com/hoist-non-react-statics/-/hoist-non-react-statics-2.5.5.tgz#c5903cf409c0dfd908f388e619d86b9c1174cb47"
@@ -3709,6 +3719,14 @@ query-string@^6.1.0:
     decode-uri-component "^0.2.0"
     strict-uri-encode "^2.0.0"
 
+ramda@^0.19.1:
+  version "0.19.1"
+  resolved "https://registry.yarnpkg.com/ramda/-/ramda-0.19.1.tgz#89c4ad697265ff6b1face9f286439e2520d6679c"
+
+ramda@^0.22.1:
+  version "0.22.1"
+  resolved "https://registry.yarnpkg.com/ramda/-/ramda-0.22.1.tgz#031da0c3df417c5b33c96234757eb37033f36a0e"
+
 randomatic@^3.0.0:
   version "3.1.0"
   resolved "https://registry.yarnpkg.com/randomatic/-/randomatic-3.1.0.tgz#36f2ca708e9e567f5ed2ec01949026d50aa10116"
@@ -3753,6 +3771,10 @@ react-native-branch@2.2.5:
   version "2.2.5"
   resolved "https://registry.yarnpkg.com/react-native-branch/-/react-native-branch-2.2.5.tgz#4074dd63b4973e6397d9ce50e97b57c77a518e9d"
 
+react-native-config@^0.11.5:
+  version "0.11.5"
+  resolved "https://registry.yarnpkg.com/react-native-config/-/react-native-config-0.11.5.tgz#516cb7b6ec437c7739236ca075971db3aabdcb95"
+
 react-native-dismiss-keyboard@1.0.0:
   version "1.0.0"
   resolved "https://registry.yarnpkg.com/react-native-dismiss-keyboard/-/react-native-dismiss-keyboard-1.0.0.tgz#32886242b3f2317e121f3aeb9b0a585e2b879b49"
@@ -3785,10 +3807,6 @@ react-native-gesture-handler@1.0.6:
     hoist-non-react-statics "^2.3.1"
     invariant "^2.2.2"
     prop-types "^15.5.10"
-
-react-native-google-signin@^1.0.0-rc6:
-  version "1.0.0-rc6"
-  resolved "https://registry.yarnpkg.com/react-native-google-signin/-/react-native-google-signin-1.0.0-rc6.tgz#13278e39551d127008e76a9c6caf532f04246f17"
 
 react-native-maps@0.21.0:
   version "0.21.0"
@@ -3831,6 +3849,16 @@ react-native-screens@^1.0.0-alpha.11, react-native-screens@^1.0.0-alpha.5:
   version "1.0.0-alpha.12"
   resolved "https://registry.yarnpkg.com/react-native-screens/-/react-native-screens-1.0.0-alpha.12.tgz#5953c39c9dbfbe324610005e07d85a416081c48c"
 
+react-native-simple-auth@^2.4.0:
+  version "2.4.0"
+  resolved "https://registry.yarnpkg.com/react-native-simple-auth/-/react-native-simple-auth-2.4.0.tgz#bc3747f753c7c85a89eda88f6d1f49c691e65157"
+  dependencies:
+    babel-plugin-ramda-patch "1.1.6"
+    babel-plugin-transform-es2015-modules-commonjs "^6.18.0"
+    babel-plugin-transform-object-rest-spread "^6.22.0"
+    hmacsha1 "^1.0.0"
+    ramda "^0.22.1"
+
 react-native-svg@6.2.2:
   version "6.2.2"
   resolved "http://registry.npmjs.org/react-native-svg/-/react-native-svg-6.2.2.tgz#5803cddce374a542b4468c38a2474fca32080685"
@@ -3851,9 +3879,9 @@ react-native-tab-view@^1.0.0:
   dependencies:
     prop-types "^15.6.1"
 
-react-native-track-player@^0.2.5:
-  version "0.2.5"
-  resolved "https://registry.yarnpkg.com/react-native-track-player/-/react-native-track-player-0.2.5.tgz#b758b527ccf7ba218bcb7e2b3955b441077d6418"
+react-native-track-player@^1.0.0:
+  version "1.0.0"
+  resolved "https://registry.yarnpkg.com/react-native-track-player/-/react-native-track-player-1.0.0.tgz#b5efb39591838f2412b4e8ee967bf64de3184010"
 
 react-native-vector-icons@4.5.0:
   version "4.5.0"
