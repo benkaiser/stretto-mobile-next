@@ -1,12 +1,12 @@
 import React from 'react';
 import {
   ActivityIndicator,
-  Button,
   Linking,
   StyleSheet,
   Text,
   View
 } from 'react-native';
+import { Button } from 'react-native-material-ui';
 import { Updates } from 'expo';
 import DataService from './services/dataService';
 import LoginService from './services/loginService';
@@ -52,10 +52,6 @@ export default class Login extends BaseView {
     return (
       <View style={styles.container}>
         { this.state.loading ? this._loadingView() : this._loginView() }
-        <Button
-          title="Reload"
-          onPress={this._onReload.bind(this)}
-        />
       </View>
     );
   }
@@ -72,7 +68,8 @@ export default class Login extends BaseView {
   _loginView() {
     return (
       <Button
-        title="Login to Show Your Library"
+        primary
+        text="Login to Show Your Library"
         onPress={this._onLoginPressed.bind(this)}
         />
     );
