@@ -1,5 +1,6 @@
 import React from 'react';
 import { StyleSheet, Image, Text, View } from 'react-native';
+import { Button } from 'react-native-material-ui';
 import BaseView from './BaseView';
 import Player from './services/player';
 
@@ -12,7 +13,6 @@ export default class Track extends BaseView {
     super();
     this._data = props.navigation.getParam('data');
     this._item = props.navigation.getParam('item');
-    console.log(this._item);
   }
 
   componentDidMount() {
@@ -27,8 +27,13 @@ export default class Track extends BaseView {
           source={{uri: this._item.cover}}
           style={{width: 400, height: 400}}
         />
+        <Button text='play/pause' onPress={this._onPause.bind(this)} />
       </View>
     );
+  }
+
+  _onPause() {
+    Player.playPause();
   }
 }
 

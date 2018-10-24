@@ -1,6 +1,7 @@
 package host.exp.exponent;
 
 
+import com.facebook.react.ReactNativeHost;
 import com.facebook.react.ReactPackage;
 
 import java.util.Arrays;
@@ -9,10 +10,29 @@ import java.util.List;
 import expolib_v1.okhttp3.OkHttpClient;
 
 // Needed for `react-native link`
-// import com.facebook.react.ReactApplication;
+import com.facebook.react.ReactApplication;
+import com.facebook.react.shell.MainReactPackage;
 import com.guichaguri.trackplayer.TrackPlayer;
 
-public class MainApplication extends ExpoApplication {
+public class MainApplication extends ExpoApplication implements ReactApplication {
+
+  private final ReactNativeHost mReactNativeHost = new ReactNativeHost(this) {
+
+    @Override
+    public boolean getUseDeveloperSupport() {
+      return BuildConfig.DEBUG;
+    }
+
+    @Override
+    protected List<ReactPackage> getPackages() {
+      return Arrays.<ReactPackage>asList(
+              //new MainReactPackage(),
+              new MainReactPackage(),
+              new TrackPlayer()
+      );
+    }
+  };
+
 
   @Override
   public boolean isDebug() {
@@ -26,9 +46,14 @@ public class MainApplication extends ExpoApplication {
         // TODO: add native modules!
 
         // Needed for `react-native link`
-        // new MainReactPackage(),
+//            new MainReactPackage(),
             new TrackPlayer()
     );
+  }
+
+  @Override
+  public ReactNativeHost getReactNativeHost() {
+    return mReactNativeHost;
   }
 
   @Override

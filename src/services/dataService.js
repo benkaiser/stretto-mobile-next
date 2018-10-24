@@ -1,4 +1,4 @@
-import Config from 'react-native-config'
+import Config from '../config';
 import Utilities from '../utilities';
 
 export default class DataService {

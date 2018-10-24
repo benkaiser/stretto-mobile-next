@@ -9,9 +9,4 @@ const config = {
     BASE_URL: 'https://next.kaiserapps.com'
   }
 };
-if (__DEV__) {
-  console.log('In DEV!');
-} else {
-  console.log('No Dev!');
-}
 export default (__DEV__ ? { ...config.allEnvs, ...config.development } : { ...config.allEnvs, ...config.production });
