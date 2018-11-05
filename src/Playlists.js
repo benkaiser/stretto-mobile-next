@@ -1,32 +1,30 @@
 import React from 'react';
-import { StyleSheet, FlatList, Text, TouchableHighlight, View } from 'react-native';
 import { ListItem } from 'react-native-material-ui';
-import BaseView from './BaseView';
+import BaseListView from './BaseListView';
 
-export default class Playlists extends BaseView {
-  static navigationOptions = { ...BaseView.navigationOptions, ...{
+export default class Playlists extends BaseListView {
+  static navigationOptions = { ...BaseListView.navigationOptions, ...{
     title: 'Playlists',
   }};
 
   constructor(props) {
-    super();
+    super(props);
     this._data = props.navigation.getParam('data');
   }
 
-  renderInternal() {
-    return (
-      <View style={styles.container}>
-        <FlatList
-          data={this._data.playlists}
-          keyExtractor={(item) => item.title}
-          renderItem={this._renderListItem.bind(this)}
-          style={styles.list}
-        />
-      </View>
-    );
+  getData() {
+    return this._data.playlists;
   }
 
-  _renderListItem({item}) {
+  itemHeight() {
+    return 40;
+  }
+
+  keyExtractor(item) {
+    return item.title;
+  }
+
+  renderListItem({ item }) {
     return (
       <ListItem
         key={item.title}
@@ -46,15 +44,3 @@ export default class Playlists extends BaseView {
     });
   }
 }
-
-const styles = StyleSheet.create({
-  container: {
-    flex: 1,
-    backgroundColor: '#fff',
-    alignItems: 'center',
-    justifyContent: 'center',
-  },
-  list: {
-    width: '100%'
-  }
-});

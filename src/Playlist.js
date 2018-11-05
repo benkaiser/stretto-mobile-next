@@ -1,15 +1,14 @@
 import React from 'react';
-import { StyleSheet, FlatList, Text, TouchableHighlight, View } from 'react-native';
 import { ListItem } from 'react-native-material-ui';
-import BaseView from './BaseView';
+import BaseListView from './BaseListView';
 
-export default class Playlist extends BaseView {
-  static navigationOptions = ({ navigation }) => ({ ...BaseView.navigationOptions, ...{
+export default class Playlist extends BaseListView {
+  static navigationOptions = ({ navigation }) => ({ ...BaseListView.navigationOptions, ...{
     title: `${navigation.state.params.item.title}`
   }});
 
   constructor(props) {
-    super();
+    super(props);
     this._data = props.navigation.getParam('data');
     this._item = props.navigation.getParam('item');
     this._tracks = this._item.songs.map((songId) => {
@@ -17,25 +16,29 @@ export default class Playlist extends BaseView {
     }).filter(item => !!item);
   }
 
-  renderInternal() {
+
+  getData() {
+    return this._tracks;
+  }
+
+  itemHeight() {
+    return 40;
+  }
+
+  keyExtractor(item) {
+    return item.title;
+  }
+
+  renderListItem({ item }) {
     return (
-      <View style={styles.container}>
-        <FlatList
-          data={this._tracks}
-          keyExtractor={(item) => item.id}
-          renderItem={({item}) =>
-            <ListItem
-              key={item.title}
-              divider
-              onPress={this._itemClick.bind(this, item)}
-              centerElement={{
-                primaryText: item.title,
-              }}
-            />
-          }
-          style={styles.list}
-        />
-      </View>
+      <ListItem
+        key={item.title}
+        divider
+        onPress={this._itemClick.bind(this, item)}
+        centerElement={{
+          primaryText: item.title,
+        }}
+      />
     );
   }
 
@@ -46,15 +49,3 @@ export default class Playlist extends BaseView {
     });
   }
 }
-
-const styles = StyleSheet.create({
-  container: {
-    flex: 1,
-    backgroundColor: '#fff',
-    alignItems: 'center',
-    justifyContent: 'center',
-  },
-  list: {
-    width: '100%'
-  }
-});
