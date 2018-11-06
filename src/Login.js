@@ -30,6 +30,7 @@ export default class Login extends BaseView {
       if (url && url.split('://')[1]) {
         console.log('Initial url is: ' + url);
       } else {
+        console.log('received intent, logging in...');
         LoginService.checkLogin().then(credentials => {
           if (credentials) {
             this._authServerLoadData(credentials);

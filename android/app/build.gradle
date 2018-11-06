@@ -104,6 +104,7 @@ apply from: 'expo.gradle'
 
 
 dependencies {
+    compile project(':react-native-vector-icons')
     compile project(':react-native-track-player')
   implementation fileTree(dir: 'libs', include: ['*.jar'])
 

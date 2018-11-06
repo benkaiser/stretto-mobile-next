@@ -45,7 +45,8 @@ export default class Playlist extends BaseListView {
   _itemClick(item) {
     this.props.navigation.push('Track', {
       data: this._data,
-      item: item
+      item: item,
+      playlistItems: this._tracks
     });
   }
 }

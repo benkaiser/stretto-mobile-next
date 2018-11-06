@@ -1,8 +1,7 @@
 import { AsyncStorage } from "react-native"
 import { google } from 'react-native-simple-auth';
 import Utilities from '../utilities';
-
-const CLIENT_ID = '335415163955-95tkeeqa5gbaj73jorhus66kqmnnunnr.apps.googleusercontent.com';
+import Config from '../config';
 
 class LoginService {
   checkLogin() {
@@ -13,7 +12,7 @@ class LoginService {
         return fetch('https://www.googleapis.com/oauth2/v4/token', {
           method: 'POST',
           body: JSON.stringify({
-            client_id: CLIENT_ID,
+            client_id: Config.GOOGLE_CLIENT_ID,
             refresh_token: this._userInfo.refresh_token,
             grant_type: 'refresh_token'
           })
@@ -32,7 +31,7 @@ class LoginService {
   login() {
 
     return google({
-      appId: CLIENT_ID,
+      appId: Config.GOOGLE_CLIENT_ID,
       callback: 'com.kaiserapps.stretto:/oauth2redirect'
     })
     .then((result) => {

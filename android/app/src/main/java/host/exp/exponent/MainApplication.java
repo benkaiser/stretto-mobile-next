@@ -11,6 +11,7 @@ import expolib_v1.okhttp3.OkHttpClient;
 
 // Needed for `react-native link`
 import com.facebook.react.ReactApplication;
+import com.oblador.vectoricons.VectorIconsPackage;
 import com.facebook.react.shell.MainReactPackage;
 import com.guichaguri.trackplayer.TrackPlayer;
 
@@ -27,6 +28,7 @@ public class MainApplication extends ExpoApplication implements ReactApplication
     protected List<ReactPackage> getPackages() {
       return Arrays.<ReactPackage>asList(
               //new MainReactPackage(),
+            new VectorIconsPackage(),
               new MainReactPackage(),
               new TrackPlayer()
       );

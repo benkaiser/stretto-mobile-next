@@ -1,6 +1,7 @@
 const config = {
   allEnvs: {
-    STREAMER_URL: 'https://streamer.kaiserapps.com'
+    STREAMER_URL: 'https://streamer.kaiserapps.com',
+    GOOGLE_CLIENT_ID: '335415163955-95tkeeqa5gbaj73jorhus66kqmnnunnr.apps.googleusercontent.com'
   },
   development: {
     BASE_URL: 'http://192.168.0.139:3000'
