@@ -1,5 +1,6 @@
 import React from 'react';
-import { ActivityIndicator, StyleSheet, Image, Slider, Text, View } from 'react-native';
+import { ActivityIndicator, StyleSheet, Slider, Text, View } from 'react-native';
+import FastImage from 'react-native-fast-image'
 import Icon from 'react-native-vector-icons/FontAwesome';
 import BaseView from './BaseView';
 import Player from './services/player';
@@ -15,8 +16,8 @@ export default class Track extends BaseView {
     this._item = props.navigation.getParam('item');
     this._playlistItems = props.navigation.getParam('playlistItems');
     this.state = {
-      buffering: true,
-      playing: false,
+      buffering: Player.buffering,
+      playing: Player.playing,
       seekTime: 0,
       duration: 0
     };
@@ -36,7 +37,7 @@ export default class Track extends BaseView {
     return (
       <View style={styles.container}>
         <Text>{this._title()}</Text>
-        <Image
+        <FastImage
           source={{uri: this._cover()}}
           style={{width: 400, height: 400}}
         />
@@ -58,11 +59,11 @@ export default class Track extends BaseView {
   }
 
   _title() {
-    return this.state.currentTrack ? this.state.currentTrack.title : this._item.title;
+    return (this.state.currentTrack || this._item).title;
   }
 
   _cover() {
-    return this.state.currentTrack ? this.state.currentTrack.artwork : this._item.cover;
+    return (this.state.currentTrack || this._item).cover;
   }
 
   _onPlayPause() {
@@ -70,7 +71,7 @@ export default class Track extends BaseView {
   }
 
   _updateState() {
-    if (this._title() !== Player.currentTrack.title) {
+    if (Player.currentTrack && this._title() !== Player.currentTrack.title) {
       this.props.navigation.setParams({ title: Player.currentTrack.title });
     }
     this.setState({

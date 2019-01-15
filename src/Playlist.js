@@ -1,6 +1,7 @@
 import React from 'react';
 import { ListItem } from 'react-native-material-ui';
-import { Image, StyleSheet, Text, View } from 'react-native';
+import { StyleSheet, Text, View } from 'react-native';
+import FastImage from 'react-native-fast-image'
 import BaseListView from './BaseListView';
 
 export default class Playlist extends BaseListView {
@@ -19,7 +20,7 @@ export default class Playlist extends BaseListView {
       this._tracks = this._tracks.sort((a, b) => {
         return a.createdAt < b.createdAt ? 1 : -1;
       });
-    } 
+    }
   }
 
   getData() {
@@ -38,11 +39,12 @@ export default class Playlist extends BaseListView {
     return (
       <ListItem
         key={item.title}
+        height={50}
         divider
         onPress={this._itemClick.bind(this, item)}
         centerElement={
           <View style={styles.listItem}>
-            <Image
+            <FastImage
               source={{uri: item.cover}}
               style={styles.image}
             />

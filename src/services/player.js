@@ -1,13 +1,13 @@
 import Config from '../config';
 import TrackPlayer from 'react-native-track-player';
-import { AppState } from 'react-native';
+import { AsyncStorage } from 'react-native';
 
 class Player {  
   constructor() {
     this._listeners = [];
     this._seekTime = 0;
     this._duration = 1;
-    this._currentTrack = {};
+    this._currentTrack = undefined;
 
     this._eventMappings = {
       'remote-play': this.playPause.bind(this),
@@ -36,15 +36,18 @@ class Player {
   }
 
   get playing() {
-    return this._lastState === TrackPlayer.STATE_PLAYING;
+    return TrackPlayer && this._lastState === TrackPlayer.STATE_PLAYING;
   }
 
   get buffering() {
-    return this._lastState === TrackPlayer.STATE_BUFFERING;
+    return TrackPlayer && this._lastState === TrackPlayer.STATE_BUFFERING;
   }
 
   get currentTrack() {
-    return this._currentTrack;
+    return this._currentTrack && {
+      ...this._currentTrack,
+      cover: this._currentTrack.artwork
+    };
   }
 
   get seekTime() {
@@ -67,16 +70,21 @@ class Player {
     return TrackPlayer.add(this._playlist.map((song) => this._songToTrackPlayerItem(song)));
   }
 
-  playSong(song, playlist) {
+  playSong(song, playlist, startPaused) {
+    console.log('playSong called with: ');
+    console.log(song.title);
+    console.log(startPaused);
     this._playlist = playlist;
     if (this._currentTrack && song.id === this._currentTrack.id) {
       return;
     }
+    this._currentTrack = undefined;
     this._song = song;
     TrackPlayer.reset();
     this.addPlaylist()
     .then(() => TrackPlayer.skip(song.id))
-    .then(() => TrackPlayer.play());
+    .then(() => !startPaused && TrackPlayer.play());
+    this._writePlayState();
   }
 
   playPause() {
@@ -108,9 +116,15 @@ class Player {
   }
 
   _trackPlayerEvent(event) {
-    return (this._eventMappings[event.type] || this._updateState.bind(this))(event).then(() => {
-      this._listeners.forEach(listener => listener && listener());
-    });
+    try {
+      return (this._eventMappings[event.type] || this._updateState.bind(this))(event).then(() => {
+        this._writePlayState();
+        this._listeners.forEach(listener => listener && listener());
+      });
+    } catch (error) {
+      console.log('Unable to find event for: ' + event.type);
+      console.error(error);
+    }
   }
 
   _playbackError(event) {
@@ -149,6 +163,17 @@ class Player {
       this._currentTrack = track;
       this._seekTime = 0;
     });
+  }
+
+  _writePlayState() {
+    if (!this._song || !this._playlist) {
+      return;
+    }
+    AsyncStorage.setItem('PLAY_STATE', JSON.stringify({
+      track: this.currentTrack ? this.currentTrack : this._song,
+      playlistItems: this._playlist,
+      playing: this.playing
+    }));
   }
 
   _nextTrack(track) {

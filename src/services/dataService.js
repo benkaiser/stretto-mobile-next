@@ -1,5 +1,6 @@
 import Config from '../config';
 import Utilities from '../utilities';
+import { AsyncStorage } from 'react-native';
 
 export default class DataService {
   static getData(options) {
@@ -7,8 +8,16 @@ export default class DataService {
       throw new Error('Attempt to get data without token or email');
     }
 
-    return DataService._login(options.token, options.email)
-    .then(DataService._getData);
+    return DataService._getLocalData().then(data => {
+      if (data) {
+        DataService._login(options.token, options.email).then(DataService._updateData());
+        return data;
+      } else {
+        return DataService._login(options.token, options.email)
+        .then(DataService._getData);
+      }
+    })
+
   }
 
   static _login(token, email) {
@@ -41,13 +50,41 @@ export default class DataService {
       data.playlists = data.playlists.sort((a, b) => {
         return a.editable >= b.editable || a.title > b.title;
       });
+      DataService._setLocalData(data);
       return data;
-      // this._setLocalData(data.songs || [], data.playlists || []);
-      // this._updateLatestVersion(data.version);
     })
     .catch((error) => {
       console.log('landed in error');
       console.log(error);
     });
+  }
+
+  static _updateData() {
+    return DataService._getLocalData().then(data => {
+      if (data) {
+        return fetch(Config.BASE_URL + '/latestversion', {
+          credentials: 'same-origin',
+          method: 'GET'
+        }).then(Utilities.fetchToJson)
+        .then(response => {
+          if (parseInt(data.version) < parseInt(response.version)) {
+            console.log('our version is old, getting new data');
+            return DataService._getData();
+          } else {
+            console.log('our data is up to date, no need to update');
+          }
+        });
+      } else {
+        return DataService._getData();
+      }
+    })
+  }
+
+  static _setLocalData(data) {
+    AsyncStorage.setItem('USER_DATA', JSON.stringify(data));
+  }
+
+  static _getLocalData() {
+    return AsyncStorage.getItem('USER_DATA').then(data => JSON.parse(data));
   }
 }

@@ -9,6 +9,7 @@ import {
 import { Button } from 'react-native-material-ui';
 import DataService from './services/dataService';
 import LoginService from './services/loginService';
+import LoadedExecutor from './executor/LoadedExecutor';
 import BaseView from './BaseView';
 
 export default class Login extends BaseView {
@@ -29,7 +30,6 @@ export default class Login extends BaseView {
       if (url && url.split('://')[1]) {
         console.log('Initial url is: ' + url);
       } else {
-        console.log('received intent, logging in...');
         LoginService.checkLogin().then(credentials => {
           if (credentials) {
             this._authServerLoadData(credentials);
@@ -91,6 +91,7 @@ export default class Login extends BaseView {
     });
     return DataService.getData(credentials)
     .then(data => {
+      LoadedExecutor.execute(data);
       this.props.navigation.replace('Playlists', {
         data: data
       });

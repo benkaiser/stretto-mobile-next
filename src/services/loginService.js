@@ -29,7 +29,6 @@ class LoginService {
   }
 
   login() {
-
     return google({
       appId: Config.GOOGLE_CLIENT_ID,
       callback: 'com.strettomobilenext.' + (__DEV__ ? 'debug' : 'release') + ':/oauth2redirect'
