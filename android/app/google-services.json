@@ -10,7 +10,7 @@
       "client_info": {
         "mobilesdk_app_id": "1:335415163955:android:f82d6464bd7cb15e",
         "android_client_info": {
-          "package_name": "com.kaiserapps.stretto"
+          "package_name": "com.strettomobilenext"
         }
       },
       "oauth_client": [
@@ -18,7 +18,7 @@
           "client_id": "335415163955-95tkeeqa5gbaj73jorhus66kqmnnunnr.apps.googleusercontent.com",
           "client_type": 1,
           "android_info": {
-            "package_name": "com.kaiserapps.stretto",
+            "package_name": "com.strettomobilenext",
             "certificate_hash": "892b2b46907b26d3e729829afce15446b9947450"
           }
         },

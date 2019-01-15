@@ -7,6 +7,7 @@ class Player {
     this._listeners = [];
     this._seekTime = 0;
     this._duration = 1;
+    this._currentTrack = {};
 
     this._eventMappings = {
       'remote-play': this.playPause.bind(this),
@@ -20,8 +21,8 @@ class Player {
       'playback-error': this._playbackError.bind(this)
     };
 
+    TrackPlayer.registerEventHandler(this._trackPlayerEvent.bind(this));
     TrackPlayer.setupPlayer().then(() => {
-      TrackPlayer.registerEventHandler(this._trackPlayerEvent.bind(this));
       TrackPlayer.updateOptions({
         capabilities: [
           TrackPlayer.CAPABILITY_PLAY,

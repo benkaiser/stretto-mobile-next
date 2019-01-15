@@ -7,7 +7,6 @@ import {
   View
 } from 'react-native';
 import { Button } from 'react-native-material-ui';
-import { Updates } from 'expo';
 import DataService from './services/dataService';
 import LoginService from './services/loginService';
 import BaseView from './BaseView';

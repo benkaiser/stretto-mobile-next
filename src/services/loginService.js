@@ -32,7 +32,7 @@ class LoginService {
 
     return google({
       appId: Config.GOOGLE_CLIENT_ID,
-      callback: 'com.kaiserapps.stretto:/oauth2redirect'
+      callback: 'com.strettomobilenext.' + (__DEV__ ? 'debug' : 'release') + ':/oauth2redirect'
     })
     .then((result) => {
       if (!result || !result.credentials.id_token || !result.credentials.refresh_token || !result.user.email) {

@@ -25,10 +25,10 @@
     ],
     "ios": {
       "supportsTablet": true,
-      "bundleIdentifier": "com.kaiserapps.stretto"
+      "bundleIdentifier": "com.strettomobilenext"
     },
     "android": {
-      "package": "com.kaiserapps.stretto",
+      "package": "com.strettomobilenext",
       "publishBundlePath": "android/app/src/main/assets/shell-app.bundle",
       "publishManifestPath": "android/app/src/main/assets/shell-app-manifest.json"
     },
