@@ -1,5 +1,6 @@
 import React from 'react';
 import { ListItem } from 'react-native-material-ui';
+import { Image, StyleSheet, Text, View } from 'react-native';
 import BaseListView from './BaseListView';
 
 export default class Playlist extends BaseListView {
@@ -14,8 +15,12 @@ export default class Playlist extends BaseListView {
     this._tracks = this._item.songs.map((songId) => {
       return this._data.songs.filter((item) => item.id === songId)[0];
     }).filter(item => !!item);
+    if (this._item.title === 'Library') {
+      this._tracks = this._tracks.sort((a, b) => {
+        return a.createdAt < b.createdAt ? 1 : -1;
+      });
+    } 
   }
-
 
   getData() {
     return this._tracks;
@@ -35,9 +40,15 @@ export default class Playlist extends BaseListView {
         key={item.title}
         divider
         onPress={this._itemClick.bind(this, item)}
-        centerElement={{
-          primaryText: item.title,
-        }}
+        centerElement={
+          <View style={styles.listItem}>
+            <Image
+              source={{uri: item.cover}}
+              style={styles.image}
+            />
+            <Text style={styles.text}>{item.title}</Text>
+          </View>
+        }
       />
     );
   }
@@ -50,3 +61,23 @@ export default class Playlist extends BaseListView {
     });
   }
 }
+
+const styles = StyleSheet.create({
+  image: {
+    width: 40,
+    height: 40,
+    borderRadius: 0,
+    marginTop: 5,
+    marginLeft: -10
+  },
+  text: {
+    marginLeft: 10,
+    fontSize: 18,
+    lineHeight: 50,
+    color: '#000'
+  },
+  listItem: {
+    flex: 1,
+    flexDirection: 'row'
+  }
+});
