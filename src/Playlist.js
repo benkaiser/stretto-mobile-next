@@ -28,7 +28,7 @@ export default class Playlist extends BaseListView {
   }
 
   itemHeight() {
-    return 40;
+    return 50;
   }
 
   keyExtractor(item) {

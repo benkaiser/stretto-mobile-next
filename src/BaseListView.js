@@ -7,13 +7,12 @@ export default class BaseListView extends BasePlayerView {
 
   renderContent() {
     return (
-      <View>
+      <View style={styles.container}>
         <FlatList
           data={this.getData()}
           keyExtractor={this.keyExtractor.bind(this)}
           renderItem={this.renderListItem.bind(this)}
           getItemLayout={this._getItemLayout.bind(this)}
-          style={styles.list}
         />
       </View>
     );
@@ -46,12 +45,6 @@ export default class BaseListView extends BasePlayerView {
 
 const styles = StyleSheet.create({
   container: {
-    flex: 1,
-    backgroundColor: '#fff',
-    alignItems: 'center',
-    justifyContent: 'center',
-  },
-  list: {
-    width: '100%'
+    flex: 1
   }
 });

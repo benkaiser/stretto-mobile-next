@@ -50,6 +50,10 @@ class Player {
     };
   }
 
+  get playlist() {
+    return this._playlist;
+  }
+
   get seekTime() {
     return this._seekTime;
   }

@@ -12,7 +12,6 @@ export default class Track extends BaseView {
 
   constructor(props) {
     super();
-    this._data = props.navigation.getParam('data');
     this._item = props.navigation.getParam('item');
     this._playlistItems = props.navigation.getParam('playlistItems');
     this.state = {
