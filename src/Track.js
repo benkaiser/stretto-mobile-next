@@ -1,11 +1,13 @@
 import React from 'react';
 import { ActivityIndicator, StyleSheet, Slider, Text, View } from 'react-native';
+import { withTheme } from 'react-native-material-ui';
 import FastImage from 'react-native-fast-image'
-import Icon from 'react-native-vector-icons/FontAwesome';
+
 import BaseView from './BaseView';
+import Icon from './components/icon';
 import Player from './services/player';
 
-export default class Track extends BaseView {
+class Track extends BaseView {
   static navigationOptions = ({ navigation }) => ({ ...BaseView.navigationOptions, ...{
     title: navigation.state.params.title || navigation.state.params.item.title
   }});
@@ -17,12 +19,14 @@ export default class Track extends BaseView {
     this.state = {
       buffering: Player.buffering,
       playing: Player.playing,
+      shuffled: Player.shuffled,
       seekTime: 0,
       duration: 0
     };
   }
 
   componentDidMount() {
+    console.log('mounted?');
     Player.playSong(this._item, this._playlistItems);
     this._unlisten = Player.addListener(this._updateState.bind(this));
   }
@@ -33,6 +37,11 @@ export default class Track extends BaseView {
   }
 
   renderInternal() {
+    let shuffleStyles = {};
+    if (this.state.shuffled) {
+      shuffleStyles.color = this.props.theme.palette.primaryColor;
+    }
+
     return (
       <View style={styles.container}>
         <Text>{this._title()}</Text>
@@ -41,14 +50,14 @@ export default class Track extends BaseView {
           style={{width: 400, height: 400}}
         />
         <View style={styles.controls}>
-          <Icon.Button iconStyle={styles.icon} size={30} name='random' color="#000" backgroundColor="#fff" onPress={() => {}} />
-          <Icon.Button iconStyle={styles.icon} size={30} name='step-backward' color="#000" backgroundColor="#fff" onPress={this._previous.bind(this)} />
+          <Icon iconStyle={[styles.icon, shuffleStyles]} name='random' onPress={Player.toggleShuffle.bind(Player)} />
+          <Icon iconStyle={styles.icon} name='step-backward' onPress={this._previous.bind(this)} />
           { this.state.buffering ? 
             <ActivityIndicator style={styles.buffer} size='large' />
-            : <Icon.Button iconStyle={styles.icon} size={30} name={this.state.playing ? 'pause' : 'play'} color="#000" backgroundColor="#fff" onPress={this._onPlayPause.bind(this)} />
+            : <Icon iconStyle={styles.icon} name={this.state.playing ? 'pause' : 'play'} onPress={this._onPlayPause.bind(this)} />
           }
-          <Icon.Button iconStyle={styles.icon} size={30} name='step-forward' color="#000" backgroundColor="#fff" onPress={this._next.bind(this)} />
-          <Icon.Button iconStyle={styles.icon} size={30} name='retweet' color="#000" backgroundColor="#fff" onPress={() => {}} />
+          <Icon iconStyle={styles.icon} name='step-forward' onPress={this._next.bind(this)} />
+          <Icon iconStyle={styles.icon} name='retweet' onPress={() => {}} />
         </View>
         <View style={styles.sliderContainer}>
           <Slider style={styles.slider} step={0.001} minimumValue={0} maximumValue={1} value={this.state.duration !== 0 ? this.state.seekTime / this.state.duration : 0} onValueChange={this._onSlide.bind(this)} />
@@ -78,7 +87,8 @@ export default class Track extends BaseView {
       buffering: Player.buffering,
       currentTrack: Player.currentTrack,
       seekTime: Player.seekTime,
-      duration: Player.duration
+      duration: Player.duration,
+      shuffled: Player.shuffled
     });
     this._autoIncrementTimer && clearInterval(this._autoIncrementTimer);
     if (Player.playing) {
@@ -104,6 +114,8 @@ export default class Track extends BaseView {
     Player.seekToFraction(value);
   }
 }
+
+export default withTheme(Track);
 
 const styles = StyleSheet.create({
   buffer: {

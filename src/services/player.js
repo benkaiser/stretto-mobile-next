@@ -2,11 +2,14 @@ import Config from '../config';
 import TrackPlayer from 'react-native-track-player';
 import { AsyncStorage } from 'react-native';
 
-class Player {  
+import Utilities from '../utilities';
+
+class Player {
   constructor() {
     this._listeners = [];
     this._seekTime = 0;
     this._duration = 1;
+    this._shuffled = false;
     this._currentTrack = undefined;
 
     this._eventMappings = {
@@ -54,8 +57,16 @@ class Player {
     return this._playlist;
   }
 
+  get originalPlaylist() {
+    return this._originalPlaylist;
+  }
+
   get seekTime() {
     return this._seekTime;
+  }
+
+  get shuffled() {
+    return this._shuffled;
   }
 
   get duration() {
@@ -71,22 +82,26 @@ class Player {
   }
 
   addPlaylist() {
-    return TrackPlayer.add(this._playlist.map((song) => this._songToTrackPlayerItem(song)));
+    const indexOfCurrentSong = this._playlist.findIndex(item => {
+      return item.id == (this._currentTrack ? this._currentTrack.id : this._song.id)
+    });
+    const songsWithCurrentTrackFirst = this._playlist.slice(indexOfCurrentSong).concat(this._playlist.slice(0, indexOfCurrentSong));
+    if (this._currentTrack && this._currentTrack.id == songsWithCurrentTrackFirst[0].id) {
+      songsWithCurrentTrackFirst.shift();
+    }
+    return TrackPlayer.add(songsWithCurrentTrackFirst.map((song) => this._songToTrackPlayerItem(song)));
   }
 
   playSong(song, playlist, startPaused) {
-    console.log('playSong called with: ');
-    console.log(song.title);
-    console.log(startPaused);
-    this._playlist = playlist;
+    this._originalPlaylist = playlist.slice(0);
+    this._song = song;
     if (this._currentTrack && song.id === this._currentTrack.id) {
       return;
     }
     this._currentTrack = undefined;
-    this._song = song;
+    this._reshufflePlaylistIfNeeded();
     TrackPlayer.reset();
     this.addPlaylist()
-    .then(() => TrackPlayer.skip(song.id))
     .then(() => !startPaused && TrackPlayer.play());
     this._writePlayState();
   }
@@ -96,17 +111,52 @@ class Player {
     this.playing ? TrackPlayer.pause() : TrackPlayer.play();
   }
 
+  restoreFromState(state) {
+    this._shuffled = state.shuffled || false;
+    this.playSong(state.track, state.playlistItems, state.playing == false);
+  }
+
   seekToFraction(fraction) {
     return TrackPlayer.getDuration()
     .then((duration) => TrackPlayer.seekTo(fraction * duration));
   }
 
+  toggleShuffle() {
+    this._shuffled = !this._shuffled;
+    this._reshufflePlaylistIfNeeded();
+  }
+
   next() {
-    return TrackPlayer.skipToNext();
+    return TrackPlayer.skipToNext().catch(() => {
+      TrackPlayer.getQueue().then(queue => {
+        TrackPlayer.skip(queue[0].id);
+      });
+    });
   }
 
   previous() {
-    return TrackPlayer.skipToPrevious();
+    return TrackPlayer.skipToPrevious().catch(() => {
+      TrackPlayer.getQueue().then(queue => {
+        TrackPlayer.skip(queue[queue.length - 1].id);
+      });
+    });
+  }
+
+  _emitChange() {
+    this._listeners.forEach(listener => listener && listener());
+  }
+
+  _reshufflePlaylistIfNeeded() {
+    this._playlist = this._shuffled ? Utilities.shuffleArray(this._originalPlaylist.slice(0)) : this._originalPlaylist.slice(0);
+    this._requeueTracks();
+    this._updateState().then(() => {
+      this._emitChange();
+    });
+  }
+
+  _requeueTracks() {
+    TrackPlayer.removeUpcomingTracks();
+    this.addPlaylist();
   }
 
   _songToTrackPlayerItem(song) {
@@ -123,7 +173,7 @@ class Player {
     try {
       return (this._eventMappings[event.type] || this._updateState.bind(this))(event).then(() => {
         this._writePlayState();
-        this._listeners.forEach(listener => listener && listener());
+        this._emitChange();
       });
     } catch (error) {
       console.log('Unable to find event for: ' + event.type);
@@ -175,8 +225,9 @@ class Player {
     }
     AsyncStorage.setItem('PLAY_STATE', JSON.stringify({
       track: this.currentTrack ? this.currentTrack : this._song,
-      playlistItems: this._playlist,
-      playing: this.playing
+      playlistItems: this._originalPlaylist,
+      playing: this.playing,
+      shuffled: this._shuffled
     }));
   }
 

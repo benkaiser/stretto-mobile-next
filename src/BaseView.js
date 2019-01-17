@@ -1,5 +1,4 @@
 import React from 'react';
-import { View } from 'react-native';
 import { COLOR, ThemeContext, getTheme } from 'react-native-material-ui';
 
 const themeColor = COLOR.blue400;

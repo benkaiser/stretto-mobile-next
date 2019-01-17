@@ -1,11 +1,9 @@
 import React from 'react';
 import { ActivityIndicator, StyleSheet, Text, TouchableOpacity, View } from 'react-native';
 import FastImage from 'react-native-fast-image'
-import Icon from 'react-native-vector-icons/FontAwesome';
-import { IconToggle } from 'react-native-material-ui';
 
 import Player from './services/player';
-
+import Icon from './components/icon';
 
 export default class CurrentTrack extends React.Component {
   constructor() {
@@ -39,9 +37,7 @@ export default class CurrentTrack extends React.Component {
           <View style={styles.control}>
             { this.state.buffering ? 
               <ActivityIndicator style={styles.buffer} size='large' />
-              : <IconToggle color='#000' size={30} onPress={this._onPlayPause.bind(this)}>
-                  <Icon name={this.state.playing ? 'pause' : 'play'} size={30} />
-                </IconToggle>
+              : <Icon name={this.state.playing ? 'pause' : 'play'} size={30} onPress={this._onPlayPause.bind(this)} />
             }
           </View>
         </TouchableOpacity>

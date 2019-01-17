@@ -12,7 +12,7 @@ export default class LoadedExecutor {
       if (!state.track || !state.playlistItems) {
         return;
       }
-      Player.playSong(state.track, state.playlistItems, state.playing == false)
+      Player.restoreFromState(state);
     });
   }
 }
