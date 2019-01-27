@@ -1,6 +1,7 @@
 {
   "name": "strettomobilenext",
   "main": "node_modules/expo/AppEntry.js",
+  "version": "0.1.0",
   "private": true,
   "scripts": {
     "start": "react-native start",
