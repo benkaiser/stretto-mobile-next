@@ -1,6 +1,7 @@
 import Config from '../config';
 import Utilities from '../utilities';
 import { AsyncStorage } from 'react-native';
+import PlaylistWrapper from '../dataAccess/PlaylistWrapper';
 
 export default class DataService {
   static getData(options) {
@@ -16,8 +17,10 @@ export default class DataService {
         return DataService._login(options.token, options.email)
         .then(DataService._getData);
       }
-    })
-
+    }).then((data) => {
+      PlaylistWrapper.setData(data);
+      return data;
+    });
   }
 
   static _login(token, email) {
@@ -82,6 +85,7 @@ export default class DataService {
 
   static _setLocalData(data) {
     AsyncStorage.setItem('USER_DATA', JSON.stringify(data));
+    PlaylistWrapper.setData(data);
   }
 
   static _getLocalData() {

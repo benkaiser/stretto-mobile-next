@@ -11,20 +11,17 @@ export default class Playlist extends BaseListView {
 
   constructor(props) {
     super(props);
-    this._data = props.navigation.getParam('data');
-    this._item = props.navigation.getParam('item');
-    this._tracks = this._item.songs.map((songId) => {
-      return this._data.songs.filter((item) => item.id === songId)[0];
-    }).filter(item => !!item);
-    if (this._item.title === 'Library') {
-      this._tracks = this._tracks.sort((a, b) => {
+    const item = props.navigation.getParam('item');
+    this.state = {
+      item,
+      songs: item.title !== 'Library' ? item.songs : item.songs.sort((a, b) => {
         return a.createdAt < b.createdAt ? 1 : -1;
-      });
-    }
+      })
+    };
   }
 
   getData() {
-    return this._tracks;
+    return this.state.songs;
   }
 
   itemHeight() {
@@ -57,9 +54,8 @@ export default class Playlist extends BaseListView {
 
   _itemClick(item) {
     this.props.navigation.push('Track', {
-      data: this._data,
       item: item,
-      playlistItems: this._tracks
+      playlistItems: this.state.songs
     });
   }
 }

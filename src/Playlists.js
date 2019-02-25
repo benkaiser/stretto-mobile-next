@@ -1,6 +1,7 @@
 import React from 'react';
 import { ListItem } from 'react-native-material-ui';
 import BaseListView from './BaseListView';
+import PlaylistWrapper from './dataAccess/PlaylistWrapper';
 
 export default class Playlists extends BaseListView {
   static navigationOptions = { ...BaseListView.navigationOptions, ...{
@@ -9,11 +10,12 @@ export default class Playlists extends BaseListView {
 
   constructor(props) {
     super(props);
-    this._data = props.navigation.getParam('data');
+    PlaylistWrapper.addListener(this._updateState.bind(this))
+    this.state = this._getStateFromStores();
   }
 
   getData() {
-    return this._data.playlists;
+    return this.state.playlists;
   }
 
   itemHeight() {
@@ -39,8 +41,17 @@ export default class Playlists extends BaseListView {
 
   _itemClick(item) {
     this.props.navigation.push('Playlist', {
-      data: this._data,
       item: item
     });
+  }
+
+  _updateState() {
+    this.setState(this._getStateFromStores());
+  }
+
+  _getStateFromStores() {
+    return {
+      playlists: PlaylistWrapper.getPlaylists()
+    };
   }
 }

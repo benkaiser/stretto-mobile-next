@@ -2,6 +2,7 @@ import React from 'react';
 import {
   ActivityIndicator,
   Linking,
+  NetInfo,
   StyleSheet,
   Text,
   View
@@ -11,6 +12,7 @@ import DataService from './services/dataService';
 import LoginService from './services/loginService';
 import LoadedExecutor from './executor/LoadedExecutor';
 import BaseView from './BaseView';
+import PlaylistWrapper from './dataAccess/PlaylistWrapper';
 
 export default class Login extends BaseView {
   static navigationOptions = { ...BaseView.navigationOptions, ...{
@@ -21,7 +23,7 @@ export default class Login extends BaseView {
     super();
     this.state = {
       loading: true,
-      loadingText: 'Checking login status...'
+      loadingText: 'Loading...'
     };
   }
 
@@ -30,19 +32,25 @@ export default class Login extends BaseView {
       if (url && url.split('://')[1]) {
         console.log('Initial url is: ' + url);
       } else {
-        LoginService.checkLogin().then(credentials => {
-          if (credentials) {
-            this._authServerLoadData(credentials);
+        NetInfo.getConnectionInfo().then((connectionInfo) => {
+          if (connectionInfo.type === 'none' || connectionInfo.type === 'unknown') {
+            PlaylistWrapper.loadFromLocal().then(this._loadingComplete.bind(this));
           } else {
-            this.setState({
-              loading: false
+            LoginService.checkLogin().then(credentials => {
+              if (credentials) {
+                this._authServerLoadData(credentials);
+              } else {
+                this.setState({
+                  loading: false
+                });
+              }
+            }).catch(error => {
+              console.log(error);
+              this.setState({
+                loading: false
+              });
             });
           }
-        }).catch(error => {
-          console.log(error);
-          this.setState({
-            loading: false
-          });
         });
       }
     });
@@ -90,17 +98,18 @@ export default class Login extends BaseView {
       loadingText: 'Loading Stretto data'
     });
     return DataService.getData(credentials)
-    .then(data => {
-      LoadedExecutor.execute(data);
-      this.props.navigation.replace('Playlists', {
-        data: data
-      });
-    }).catch((error) => {
+    .then(this._loadingComplete.bind(this))
+    .catch((error) => {
       this.setState({
         loading: false
       });
       console.log(error);
     });
+  }
+
+  _loadingComplete() {
+    LoadedExecutor.execute();
+    this.props.navigation.replace('Playlists');
   }
 }
 

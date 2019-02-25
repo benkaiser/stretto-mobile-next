@@ -2,7 +2,7 @@ import { AsyncStorage } from 'react-native';
 import Player from '../services/player';
 
 export default class LoadedExecutor {
-  static execute(data) {
+  static execute() {
     AsyncStorage.getItem('PLAY_STATE').then(state => {
       if (!state) {
         return;
