@@ -1,7 +1,9 @@
 import React from 'react';
+import { Alert } from 'react-native';
 import { ListItem } from 'react-native-material-ui';
 import BaseListView from './BaseListView';
 import PlaylistWrapper from './dataAccess/PlaylistWrapper';
+import DownloadManager from './services/DownloadManager';
 
 export default class Playlists extends BaseListView {
   static navigationOptions = { ...BaseListView.navigationOptions, ...{
@@ -35,6 +37,7 @@ export default class Playlists extends BaseListView {
           primaryText: item.title,
         }}
         onPress={this._itemClick.bind(this, item)}
+        onLongPress={this._longPress.bind(this, item)}
       />
     );
   }
@@ -53,5 +56,27 @@ export default class Playlists extends BaseListView {
     return {
       playlists: PlaylistWrapper.getPlaylists()
     };
+  }
+
+  _longPress(item) {
+    Alert.alert(
+      'Download playlist?',
+      'This will be downloaded to your Music folder',
+      [
+        {
+          text: 'Cancel',
+          style: 'cancel'
+        },
+        {
+          text: 'OK',
+          onPress: this._startDownload.bind(this, item)
+        },
+      ],
+      {cancelable: false},
+    );
+  }
+
+  _startDownload(item) {
+    DownloadManager.downloadPlaylist(item);
   }
 }

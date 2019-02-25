@@ -3,6 +3,8 @@ import { ListItem } from 'react-native-material-ui';
 import { StyleSheet, Text, View } from 'react-native';
 import FastImage from 'react-native-fast-image'
 import BaseListView from './BaseListView';
+import Icon from './components/icon';
+import OfflineManager from './dataAccess/OfflineManager';
 
 export default class Playlist extends BaseListView {
   static navigationOptions = ({ navigation }) => ({ ...BaseListView.navigationOptions, ...{
@@ -48,8 +50,17 @@ export default class Playlist extends BaseListView {
             <Text style={styles.text}>{item.title}</Text>
           </View>
         }
+        rightElement={
+          <View>
+            { this._isOffline(item) && <Icon name='plane' size={15} /> }
+          </View>
+        }
       />
     );
+  }
+
+  _isOffline(song) {
+    return !!OfflineManager.getSongLocation(song);
   }
 
   _itemClick(item) {

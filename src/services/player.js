@@ -1,8 +1,7 @@
-import Config from '../config';
 import TrackPlayer from 'react-native-track-player';
 import { AsyncStorage } from 'react-native';
-
 import Utilities from '../utilities';
+import OfflineManager from '../dataAccess/OfflineManager';
 
 class Player {
   constructor() {
@@ -236,10 +235,12 @@ class Player {
   }
 
   _urlFor(song) {
-    if (song.id.indexOf('s_') === 0) {
-      return Config.STREAMER_URL + '/soundcloud/' + song.id.replace('s_', '')
+    const offlinePath = OfflineManager.getSongLocation(song);
+    if (offlinePath) {
+      console.log('Playing from offline path: ' + offlinePath);
+      return 'file://' + offlinePath;
     } else {
-      return Config.STREAMER_URL + '/youtube/' + song.id.replace('y_', '');
+    return Utilities.urlFor(song);
     }
   }
 }
