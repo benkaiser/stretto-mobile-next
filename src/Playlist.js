@@ -1,10 +1,11 @@
 import React from 'react';
 import { ListItem } from 'react-native-material-ui';
-import { StyleSheet, Text, View } from 'react-native';
+import { Alert, StyleSheet, Text, View } from 'react-native';
 import FastImage from 'react-native-fast-image'
 import BaseListView from './BaseListView';
 import Icon from './components/icon';
 import OfflineManager from './dataAccess/OfflineManager';
+import DownloadManager from './services/DownloadManager';
 
 export default class Playlist extends BaseListView {
   static navigationOptions = ({ navigation }) => ({ ...BaseListView.navigationOptions, ...{
@@ -41,6 +42,7 @@ export default class Playlist extends BaseListView {
         height={50}
         divider
         onPress={this._itemClick.bind(this, item)}
+        onLongPress={this._longPress.bind(this, item)}
         centerElement={
           <View style={styles.listItem}>
             <FastImage
@@ -68,6 +70,30 @@ export default class Playlist extends BaseListView {
       item: item,
       playlistItems: this.state.songs
     });
+  }
+
+  _longPress(item) {
+    Alert.alert(
+      'Download song?',
+      'This will be downloaded to your Music folder',
+      [
+        {
+          text: 'Cancel',
+          style: 'cancel'
+        },
+        {
+          text: 'OK',
+          onPress: this._startDownload.bind(this, item)
+        },
+      ],
+      {cancelable: false},
+    );
+  }
+  
+  _startDownload(item) {
+    DownloadManager.downloadSong(item).then(() => {
+      this.forceUpdate();
+    })
   }
 }
 

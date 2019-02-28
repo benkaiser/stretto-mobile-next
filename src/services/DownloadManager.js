@@ -18,6 +18,16 @@ export class DownloadManager {
     );
   }
 
+  downloadSong(song) {
+    ToastAndroid.show('Starting download for ' + song.title, ToastAndroid.SHORT);
+    return this._requestPermissionsAndMakeDir()
+    .then(() =>
+      this._downloadSong(song).then(() => {
+        ToastAndroid.show('Completed download for ' + song.title, ToastAndroid.SHORT);
+      })
+    );
+  }
+
   _scheduleDownloads(songs) {
     let complete;
     const completedPromise = new Promise((resolve) => {
