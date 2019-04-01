@@ -9,7 +9,8 @@ export default class CurrentTrack extends React.Component {
   constructor() {
     super();
     this.state = {
-      currentTrack: Player.currentTrack || undefined
+      currentTrack: Player.currentTrack || undefined,
+      playing: Player.playing
     };
   }
 

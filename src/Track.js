@@ -26,7 +26,6 @@ class Track extends BaseView {
   }
 
   componentDidMount() {
-    console.log('mounted?');
     Player.playSong(this._item, this._playlistItems);
     this._unlisten = Player.addListener(this._updateState.bind(this));
   }

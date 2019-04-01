@@ -42,7 +42,6 @@ class LoginService {
         id_token: result.credentials.id_token,
         refresh_token: result.credentials.refresh_token
       };
-      console.log(this._userInfo);
       AsyncStorage.setItem('USER_INFO', JSON.stringify(this._userInfo));
       return this._userDataResponse();
     }).catch((error) => {
