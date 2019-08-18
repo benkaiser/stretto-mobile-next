@@ -6,6 +6,7 @@ import FastImage from 'react-native-fast-image';
 import Config from './config';
 import Utilities from './utilities';
 import { ListItem } from 'react-native-material-ui';
+import SearchService from './services/SearchService';
 
 const SEARCH_WAIT = 300;
 
@@ -99,17 +100,7 @@ export default class Search extends BasePlayerView {
       this.setState({
         loading: true
       });
-      fetch(Config.BASE_URL + '/search', {
-        credentials: 'same-origin',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        method: 'POST',
-        body: JSON.stringify({
-          query: search
-        })
-      })
-      .then(Utilities.fetchToJson)
+      SearchService.search(search)
       .then(response => {
         Search.LAST_SEARCH = search;
         Search.LAST_RESULTS = response || [];

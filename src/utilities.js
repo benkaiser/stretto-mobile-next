@@ -14,6 +14,10 @@ export default {
     return a;
   },
   urlFor: (song) => {
+    // use an empty mp3 file until we load in the real deal
+    if (song.lazy) {
+      return 'https://raw.githubusercontent.com/anars/blank-audio/master/10-seconds-of-silence.mp3';
+    }
     if (song.id.indexOf('s_') === 0) {
       return Config.STREAMER_URL + '/soundcloud/' + song.id.replace('s_', '')
     } else {

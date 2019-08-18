@@ -1,7 +1,8 @@
 import TrackPlayer from 'react-native-track-player';
-import { AsyncStorage } from 'react-native';
+import { AsyncStorage, ToastAndroid } from 'react-native';
 import Utilities from '../utilities';
 import OfflineManager from '../dataAccess/OfflineManager';
+import SearchService from './SearchService';
 
 class Player {
   constructor() {
@@ -10,6 +11,7 @@ class Player {
     this._duration = 1;
     this._shuffled = false;
     this._currentTrack = undefined;
+    this._unlazifying = false;
 
     this._eventMappings = {
       'remote-play': this.playPause.bind(this),
@@ -42,7 +44,7 @@ class Player {
   }
 
   get buffering() {
-    return TrackPlayer && this._lastState === TrackPlayer.STATE_BUFFERING;
+    return this._unlazifying || TrackPlayer && this._lastState === TrackPlayer.STATE_BUFFERING;
   }
 
   get currentTrack() {
@@ -94,6 +96,7 @@ class Player {
   playSong(song, playlist, startPaused) {
     this._originalPlaylist = playlist.slice(0);
     this._song = song;
+    this._unlazifying = false;
     if (this._currentTrack && song.id === this._currentTrack.id) {
       return;
     }
@@ -164,7 +167,8 @@ class Player {
       url: this._urlFor(song),
       title: song.title,
       artist: song.artist,
-      artwork: song.cover
+      artwork: song.cover,
+      lazy: song.lazy
     };
   }
 
@@ -213,9 +217,42 @@ class Player {
     return TrackPlayer.getCurrentTrack()
     .then(id => TrackPlayer.getTrack(id))
     .then((track) => {
+      if (track && track.lazy) {
+        this._unLazifyTrack(track);
+      }
       this._currentTrack = track;
       this._seekTime = 0;
     });
+  }
+
+  _unLazifyTrack(track) {
+    if (!this._unlazifying) {
+      TrackPlayer.pause();
+      this._unlazifying = true;
+      SearchService.getYoutubeId(track)
+      .then(youtubeId => {
+        console.log(youtubeId);
+        const newId = 'y_' + youtubeId;
+        this._playlist = this.playlist.map(item => {
+          if (item.id === track.id) {
+            item.id = newId;
+            item.lazy = false;
+          }
+          return item;
+        });
+        this._song && (this._song.id = newId);
+        return TrackPlayer.reset()
+        .then(() => this.addPlaylist())
+        .then(() => TrackPlayer.skip(newId))
+        .then(() => {
+          this._unlazifying = false;
+          return TrackPlayer.play();
+        });
+      })
+      .catch(error => {
+        console.error(error);
+      });
+    }
   }
 
   _writePlayState() {
