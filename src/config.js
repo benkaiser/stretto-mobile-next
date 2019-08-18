@@ -8,7 +8,7 @@ const config = {
   },
   production: {
     BASE_URL: 'https://next.kaiserapps.com',
-    GOOGLE_CLIENT_ID: '339186653711-rulajjss1lvee23mkpgqlt1b0mbaqshv.apps.googleusercontent.com'
+    GOOGLE_CLIENT_ID: '335415163955-8ee9491jbrvk9gi6cprvucrm5oucf9fi.apps.googleusercontent.com'
   }
 };
 export default (__DEV__ ? { ...config.allEnvs, ...config.development } : { ...config.allEnvs, ...config.production });
