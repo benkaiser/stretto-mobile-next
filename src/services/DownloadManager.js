@@ -4,7 +4,7 @@ import Utilities from '../utilities';
 import OfflineManager from '../dataAccess/OfflineManager';
 
 const downloadDir = Utilities.downloadDir;
-const parallelDownloads = 30;
+const parallelDownloads = 10;
 
 export class DownloadManager {
   downloadPlaylist(playlist) {
