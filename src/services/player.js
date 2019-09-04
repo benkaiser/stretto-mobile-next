@@ -227,10 +227,7 @@ class Player {
   }
 
   _noStreamUrl(track) {
-    if (!track) {
-      return false;
-    }
-    if (track.id.indexOf('s_') === 0) {
+    if (!track || track.id.indexOf('s_') === 0 || OfflineManager.getSongLocation(track)) {
       return false;
     }
     const _foundTrack = this._playlistItemForTrack(track);

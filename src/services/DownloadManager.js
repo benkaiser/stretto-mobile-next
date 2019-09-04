@@ -2,6 +2,7 @@ import { PermissionsAndroid, ToastAndroid } from 'react-native';
 import RNFetchBlob from 'rn-fetch-blob';
 import Utilities from '../utilities';
 import OfflineManager from '../dataAccess/OfflineManager';
+import UrlService from './UrlService';
 
 const downloadDir = Utilities.downloadDir;
 const parallelDownloads = 10;
@@ -55,15 +56,24 @@ export class DownloadManager {
   }
 
   _downloadSong(song) {
-    return RNFetchBlob
-    .config({
-      path: downloadDir + song.id,
+    let promise;
+    if (song.id.indexOf('s_') === 0 || song.streamUrl) {
+      promise = Promise.resolve(Utilities.urlFor(song));
+    } else {
+      promise = UrlService.getYoutubeAudioUrl(song).then()
+    }
+    return promise.then((url) => {
+      console.log('downloading with url: ' + url);
+      return RNFetchBlob
+      .config({
+        path: downloadDir + song.id,
+      })
+      .fetch('GET', url)
+      .then((res) => {
+        OfflineManager.addSong(song, res.path());
+        console.log('The file saved to ', res.path())
+      });
     })
-    .fetch('GET', Utilities.urlFor(song))
-    .then((res) => {
-      OfflineManager.addSong(song, res.path());
-      console.log('The file saved to ', res.path())
-    });
   }
 
   _requestPermissionsAndMakeDir() {
