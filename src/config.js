@@ -3,7 +3,7 @@ const config = {
     STREAMER_URL: 'https://streamer.kaiserapps.com'
   },
   development: {
-    BASE_URL: 'http://192.168.0.142:3000',
+    BASE_URL: 'http://192.168.0.82:3000',
     GOOGLE_CLIENT_ID: '335415163955-qacqqe8jd9io5dmv6gkgnqvd807ev17h.apps.googleusercontent.com'
   },
   production: {

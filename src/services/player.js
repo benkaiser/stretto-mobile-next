@@ -3,6 +3,7 @@ import { AsyncStorage, ToastAndroid } from 'react-native';
 import Utilities from '../utilities';
 import OfflineManager from '../dataAccess/OfflineManager';
 import SearchService from './SearchService';
+import UrlService from './UrlService';
 
 class Player {
   constructor() {
@@ -82,12 +83,12 @@ class Player {
     }
   }
 
-  addPlaylist() {
+  addPlaylist(onlyClearedUpcoming) {
     const indexOfCurrentSong = this._playlist.findIndex(item => {
       return item.id == (this._currentTrack ? this._currentTrack.id : this._song.id)
     });
     const songsWithCurrentTrackFirst = this._playlist.slice(indexOfCurrentSong).concat(this._playlist.slice(0, indexOfCurrentSong));
-    if (this._currentTrack && this._currentTrack.id == songsWithCurrentTrackFirst[0].id) {
+    if (onlyClearedUpcoming && this._currentTrack && this._currentTrack.id == songsWithCurrentTrackFirst[0].id) {
       songsWithCurrentTrackFirst.shift();
     }
     return TrackPlayer.add(songsWithCurrentTrackFirst.map((song) => this._songToTrackPlayerItem(song)));
@@ -96,12 +97,12 @@ class Player {
   playSong(song, playlist, startPaused) {
     this._originalPlaylist = playlist.slice(0);
     this._song = song;
+    this._reshufflePlaylistIfNeeded();
     this._unlazifying = false;
     if (this._currentTrack && song.id === this._currentTrack.id) {
       return;
     }
     this._currentTrack = undefined;
-    this._reshufflePlaylistIfNeeded();
     TrackPlayer.reset();
     this.addPlaylist()
     .then(() => !startPaused && TrackPlayer.play());
@@ -158,7 +159,7 @@ class Player {
 
   _requeueTracks() {
     TrackPlayer.removeUpcomingTracks();
-    this.addPlaylist();
+    this.addPlaylist(true);
   }
 
   _songToTrackPlayerItem(song) {
@@ -217,7 +218,7 @@ class Player {
     return TrackPlayer.getCurrentTrack()
     .then(id => TrackPlayer.getTrack(id))
     .then((track) => {
-      if (track && track.lazy) {
+      if (track && (track.lazy || this._noStreamUrl(track))) {
         this._unLazifyTrack(track);
       }
       this._currentTrack = track;
@@ -225,34 +226,79 @@ class Player {
     });
   }
 
+  _noStreamUrl(track) {
+    if (!track) {
+      return false;
+    }
+    if (track.id.indexOf('s_') === 0) {
+      return false;
+    }
+    const _foundTrack = this._playlistItemForTrack(track);
+    return track.url !== _foundTrack.streamUrl;
+  }
+
   _unLazifyTrack(track) {
     if (!this._unlazifying) {
       TrackPlayer.pause();
       this._unlazifying = true;
-      SearchService.getYoutubeId(track)
-      .then(youtubeId => {
-        console.log(youtubeId);
-        const newId = 'y_' + youtubeId;
-        this._playlist = this.playlist.map(item => {
-          if (item.id === track.id) {
-            item.id = newId;
-            item.lazy = false;
-          }
-          return item;
-        });
-        this._song && (this._song.id = newId);
-        return TrackPlayer.reset()
+      this._getIdIfNeeded(track)
+      .then((newId) => {
+        return this._getUrlIfNeeded(track)
+        .then(() => TrackPlayer.reset())
         .then(() => this.addPlaylist())
-        .then(() => TrackPlayer.skip(newId))
         .then(() => {
-          this._unlazifying = false;
-          return TrackPlayer.play();
+          return TrackPlayer.skip(newId)
         });
-      })
-      .catch(error => {
+      }).then(() => {
+        this._unlazifying = false;
+        return TrackPlayer.play();
+      }).catch(error => {
+        // this._unlazifying = false;
         console.error(error);
       });
     }
+  }
+
+  _getIdIfNeeded(track) {
+    if (!track.lazy) {
+      return Promise.resolve(track.id);
+    }
+    return SearchService.getYoutubeId(track)
+    .then(youtubeId => {
+      const newId = 'y_' + youtubeId;
+      this._playlist = this.playlist.map(item => {
+        if (item.id === track.id) {
+          item.id = newId;
+          item.lazy = false;
+        }
+        return item;
+      });
+      this._song && (this._song.id = newId);
+      track.id = newId;
+      return newId;
+    });
+  }
+
+  _getUrlIfNeeded(track) {
+    console.log(track);
+    if (!this._noStreamUrl(track)) {
+      return Promise.resolve();
+    }
+    return UrlService.getYoutubeAudioUrl(track)
+    .then(url => {
+      this._playlist = this.playlist.map(item => {
+        if (item.id === track.id) {
+          item.streamUrl = url;
+        }
+        return item;
+      });
+      this._song && (this._song.streamUrl = url);
+      track.streamUrl = url;
+    });
+  }
+
+  _isSoundCloud(track) {
+    return track && track.id && track.id.indexOf('s_') === 0;
   }
 
   _writePlayState() {
@@ -271,13 +317,21 @@ class Player {
     return this._playlist[this._playlist.findIndex((item) => item.id == track.id) + 1] || this._playlist[0];
   }
 
+  _playlistItemForTrack(track) {
+    return this._playlist.filter((item) => item.id == track.id)[0];
+  }
+
   _urlFor(song) {
     const offlinePath = OfflineManager.getSongLocation(song);
     if (offlinePath) {
       console.log('Playing from offline path: ' + offlinePath);
       return 'file://' + offlinePath;
     } else {
-    return Utilities.urlFor(song);
+      if (song.streamUrl) {
+        console.log('Song streamUrl: ' + song.streamUrl);
+        return song.streamUrl;
+      }
+      return Utilities.urlFor(song);
     }
   }
 }
