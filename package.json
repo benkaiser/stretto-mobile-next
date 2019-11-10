@@ -21,6 +21,6 @@
     "react-navigation": "^2.17.0",
     "reactotron-react-native": "^2.1.0",
     "rn-fetch-blob": "^0.10.15",
-    "ytdl-core": "benkaiser/node-ytdl-core"
+    "ytdl-core": "AbelTesfaye/react-native-ytdl"
   }
 }

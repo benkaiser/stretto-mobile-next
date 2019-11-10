@@ -78,10 +78,10 @@ export default class BaseView extends React.Component {
     return keymap[route] || route; 
   }
 
-  _navigate(routeName) {
+  _navigate(routeName, params) {
     const resetAction = StackActions.reset({
       index: 0,
-      actions: [NavigationActions.navigate({ routeName })],
+      actions: [NavigationActions.navigate({ routeName, params })],
     });
     this.props.navigation.dispatch(resetAction);
   }

@@ -1,12 +1,11 @@
 import React from 'react';
 import BasePlayerView from './BasePlayerView';
-import { View, StyleSheet, Text, FlatList } from 'react-native';
+import { Alert, View, StyleSheet, Text, FlatList, ToastAndroid } from 'react-native';
 import { SearchBar } from 'react-native-elements';
 import FastImage from 'react-native-fast-image';
-import Config from './config';
-import Utilities from './utilities';
 import { ListItem } from 'react-native-material-ui';
 import SearchService from './services/SearchService';
+import DataService from './services/dataService';
 
 const SEARCH_WAIT = 300;
 
@@ -20,10 +19,21 @@ export default class Search extends BasePlayerView {
 
   constructor(props) {
     super(props);
+    var searchText;
+    if (this.props.navigation && this.props.navigation.state && this.props.navigation.state.params) {
+      searchText = this.props.navigation.state.params.searchText;
+    }
     this.state = {
-      search: Search.LAST_SEARCH || '',
+      search: searchText || Search.LAST_SEARCH || '',
       loading: false,
-      results: Search.LAST_RESULTS || []
+      results: searchText ? [] : Search.LAST_RESULTS || []
+    }
+  }
+
+  componentDidMount() {
+    super.componentDidMount();
+    if (this.props.navigation && this.props.navigation.state && this.props.navigation.state.params) {
+      this._runSearch();
     }
   }
 
@@ -54,6 +64,7 @@ export default class Search extends BasePlayerView {
         height={50}
         divider
         onPress={this._itemClick.bind(this, item)}
+        onLongPress={this._longPress.bind(this, item)}
         centerElement={
           <View style={styles.listItem}>
             <FastImage
@@ -72,6 +83,41 @@ export default class Search extends BasePlayerView {
       item: item,
       playlistItems: this.state.results
     });
+  }
+
+  _longPress(item) {
+    Alert.alert(
+      'Add to library?',
+      'Are you sure you want to add this search result to your library?',
+      [
+        {
+          text: 'Cancel',
+          style: 'cancel'
+        },
+        {
+          text: 'Add it!',
+          onPress: this._addSongToLibrary.bind(this, item)
+        },
+      ],
+      {cancelable: false},
+    );
+  }
+
+  _addSongToLibrary(song) {
+    this._getLazyItem(song).then(fullSong => {
+      DataService.addSongToLibrary(fullSong).then(() => {
+        ToastAndroid.show('Added \'' + fullSong.title + '\' to Library', ToastAndroid.SHORT);
+      });
+    });
+  }
+
+  _getLazyItem(song) {
+    return SearchService.getYoutubeId(song).then(id => {
+      song.id = `y_${id}`;
+      song.url = `https://www.youtube.com/watch?v=${id}`;
+      delete song.lazy;
+      return song;
+    })
   }
 
   _getItemLayout(item, index) {

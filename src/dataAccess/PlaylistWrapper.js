@@ -5,6 +5,10 @@ const listeners = [];
 export default class PlaylistWrapper {
   static addListener(listener) {
     listeners.push(listener);
+    return () => {
+      const index = listeners.indexOf(listener);
+      index > -1 && listeners.splice(index, 1);
+    }
   }
 
   static loadFromLocal() {
@@ -17,6 +21,10 @@ export default class PlaylistWrapper {
     return PlaylistWrapper._playlists;
   }
 
+  static getSongs() {
+    return PlaylistWrapper._songs;
+  }
+
   static setData(data) {
     PlaylistWrapper._playlists = data.playlists.map((playlist) => {
       return {
@@ -26,6 +34,7 @@ export default class PlaylistWrapper {
         }).filter(item => !!item)
       }
     });
+    PlaylistWrapper._songs = data.songs;
     this._emitChange();
   }
 

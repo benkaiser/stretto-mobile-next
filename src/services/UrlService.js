@@ -4,18 +4,28 @@ const urlCache = {};
 
 export default class SearchService {
   static getYoutubeAudioUrl(track) {
+    var resolveUrl, failUrl;
     if (urlCache[track]) {
       return Promise.resolve(urlCache[track]);
     }
-    return ytdl.getInfo(track.id.replace('y_',''))
-    .then(info => {
-      let formats = ytdl.filterFormats(info.formats, 'audioonly');
-      const aacFormat = formats.filter(format => format.audioEncoding === 'aac')[0];
-      if (aacFormat) {
-        return aacFormat.url;
-      } else {
-        return formats[0].url;
+    console.log(track.id.replace('y_',''));
+    ytdl.getInfo(track.id.replace('y_',''), {}, (err, info) => {
+      if (err) {
+        return failUrl(err);
       }
+      let formats = ytdl.filterFormats(info.formats, 'audio');
+      const aacFormat = formats.filter(format =>
+        format.audioEncoding === 'aac' && !format.isDashMPD
+      )[0];
+      if (aacFormat) {
+        resolveUrl(aacFormat.url);
+      } else {
+        resolveUrl(formats[0].url);
+      }
+    })
+    return new Promise((resolve, reject) => {
+      resolveUrl = resolve;
+      failUrl = reject;
     }).then(url => {
       if (url) {
         urlCache[track.id] = url;

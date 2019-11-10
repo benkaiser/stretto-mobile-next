@@ -19,7 +19,6 @@ export default class SearchService {
   }
   
   static getYoutubeId(track) {
-    // return Promise.resolve("e-ORhEE9VVg");
     return fetch(YT_SEARCH_QUERY_URI + encodeURIComponent(track.title + " " + track.artist))
     .then(response => response.text())
     .then(responseText => {
@@ -47,7 +46,13 @@ export default class SearchService {
       artist: itunesItem.artistName,
       album: itunesItem.collectionName,
       cover: itunesItem.artworkUrl100.replace('100x100', '600x600'),
-      lazy: true
+      explicit: itunesItem.trackExplicitness === 'explicit',
+      duration: itunesItem.trackTimeMillis / 1000,
+      isYoutube: true,
+      isSoundcloud: false,
+      lazy: true,
+      createdAt: +new Date(),
+      updatedAt: +new Date()
     };
   }
 }

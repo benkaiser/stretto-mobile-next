@@ -12,8 +12,12 @@ export default class Playlists extends BaseListView {
 
   constructor(props) {
     super(props);
-    PlaylistWrapper.addListener(this._updateState.bind(this))
+    this._unsubscribe = PlaylistWrapper.addListener(this._updateState.bind(this))
     this.state = this._getStateFromStores();
+  }
+
+  componentWillUnmount() {
+    this._unsubscribe && this._unsubscribe();
   }
 
   getData() {

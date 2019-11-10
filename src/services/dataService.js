@@ -23,6 +23,43 @@ export default class DataService {
     });
   }
 
+  static addSongToLibrary(song) {
+    return fetch(Config.BASE_URL + '/addsong', {
+      credentials: 'same-origin',
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify({
+        song: song,
+        playlist: 'Library'
+      })
+    })
+    .then(Utilities.fetchToJson)
+    .then(serverResponseWithVersion => {
+      console.log(serverResponseWithVersion);
+      if (!serverResponseWithVersion.success) {
+        throw new Error(serverResponseWithVersion);
+      }
+      return this._getLocalData().then(localData => {
+        localData.playlists = localData.playlists.map(playlist => {
+          if (playlist.title === 'Library') {
+            playlist.songs.push(song.id);
+          }
+          return playlist;
+        });
+        const doesSongExist = localData.songs.filter(localSong => localSong.id === song.id).length > 0;
+        if (!doesSongExist) {
+          localData.songs.push(song);
+        }
+        localData.version = serverResponseWithVersion.version;
+        return this._setLocalData(localData);
+      });
+    }).catch(error => {
+      console.log(error);
+    });
+  }
+
   static _login(token, email) {
     return fetch(Config.BASE_URL + '/androidlogin', {
       credentials: 'same-origin',
