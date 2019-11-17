@@ -4,6 +4,9 @@ import Utilities from '../utilities';
 import OfflineManager from '../dataAccess/OfflineManager';
 import SearchService from './SearchService';
 import UrlService from './UrlService';
+import DataService from './dataService';
+import DownloadManager from './DownloadManager';
+import SettingsManager from '../dataAccess/SettingsManager';
 
 class Player {
   constructor() {
@@ -220,6 +223,8 @@ class Player {
     .then((track) => {
       if (track && (track.lazy || this._noStreamUrl(track))) {
         this._unLazifyTrack(track);
+      } else {
+        this._autoDownload(track);
       }
       this._currentTrack = track;
       this._seekTime = 0;
@@ -316,6 +321,26 @@ class Player {
 
   _playlistItemForTrack(track) {
     return this._playlist.filter((item) => item.id == track.id)[0];
+  }
+
+  _autoDownload(track) {
+    if (!SettingsManager.getSetting('autoDownload')) {
+      return;
+    }
+    const fullDetails = this._playlistItemForTrack(track);
+    DataService.isSongInLibrary(fullDetails)
+    .then(isInLibrary => {
+      if (!isInLibrary) {
+        return;
+      }
+      const alreadyDownloaded = !!OfflineManager.getSongLocation(fullDetails);
+      if (alreadyDownloaded) {
+        return;
+      }
+      console.log('Auto-downloading track');
+      console.log(fullDetails);
+      return DownloadManager.downloadSong(fullDetails);
+    });
   }
 
   _urlFor(song) {

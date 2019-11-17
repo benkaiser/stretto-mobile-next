@@ -60,6 +60,14 @@ export default class DataService {
     });
   }
 
+  static isSongInLibrary(song) {
+    return this._getLocalData().then(localData => {
+      return localData.songs.some(localSong => localSong.id === song.id);
+    }).catch(() => {
+      return false;
+    });
+  }
+
   static _login(token, email) {
     return fetch(Config.BASE_URL + '/androidlogin', {
       credentials: 'same-origin',

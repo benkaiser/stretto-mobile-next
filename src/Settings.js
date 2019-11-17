@@ -1,8 +1,9 @@
 import React from 'react';
 import BasePlayerView from './BasePlayerView';
-import { Text, View, StyleSheet } from 'react-native';
+import { Switch, Text, View, StyleSheet } from 'react-native';
 import { Button } from 'react-native-material-ui';
 import { AsyncStorage } from 'react-native';
+import SettingsManager from './dataAccess/SettingsManager';
 
 export default class Settings extends BasePlayerView {
   static navigationOptions = { ...BasePlayerView.navigationOptions, ...{
@@ -16,7 +17,11 @@ export default class Settings extends BasePlayerView {
   renderContent() {
     return (
       <View style={styles.container}>
-        <Button raised accent text="Logout" onPress={this._logout.bind(this)} />
+        <View>
+          <Text>Auto-download when playing (this will double the data usage on a first listen but reduce all future plays)</Text>
+          <Switch value={SettingsManager.getSetting('autoDownload', false)} onValueChange={this._toggleAutoDownload} />
+        </View>
+        <Button style={styles.logout} raised accent text="Logout" onPress={this._logout.bind(this)} />
       </View>
     )
   }
@@ -26,10 +31,19 @@ export default class Settings extends BasePlayerView {
       this.props.navigation.replace('Login');
     });
   }
+
+  _toggleAutoDownload = (toggleValue) => {
+    SettingsManager.setSetting('autoDownload', toggleValue);
+    this.forceUpdate();
+  }
 }
 
 const styles = StyleSheet.create({
   container: {
-    flex: 1
+    flex: 1,
+    justifyContent: 'space-between'
+  },
+  logout: {
+    alignSelf: 'flex-end'
   }
 });
