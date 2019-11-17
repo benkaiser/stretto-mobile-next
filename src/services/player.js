@@ -321,11 +321,11 @@ class Player {
   _urlFor(song) {
     const offlinePath = OfflineManager.getSongLocation(song);
     if (offlinePath) {
-      console.log('Playing from offline path: ' + offlinePath);
+      console.log('Playing from offline path (' + song.title + '): ' + offlinePath);
       return 'file://' + offlinePath;
     } else {
       if (song.streamUrl) {
-        console.log('Song streamUrl: ' + song.streamUrl);
+        console.log('Song streamUrl (' + song.title + '): ' + song.streamUrl);
         return song.streamUrl;
       }
       return Utilities.urlFor(song);
