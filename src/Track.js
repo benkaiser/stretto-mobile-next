@@ -3,6 +3,7 @@ import { ActivityIndicator, ScrollView, StyleSheet, Slider, Text, TouchableOpaci
 import { withTheme } from 'react-native-material-ui';
 import FastImage from 'react-native-fast-image'
 import { StackActions, NavigationActions } from 'react-navigation';
+import GestureRecognizer, {swipeDirections} from 'react-native-swipe-gestures';
 
 import BaseView from './BaseView';
 import Icon from './components/icon';
@@ -11,7 +12,8 @@ import PlaylistWrapper from './dataAccess/PlaylistWrapper';
 
 class Track extends BaseView {
   static navigationOptions = ({ navigation }) => ({ ...BaseView.navigationOptions, ...{
-    title: navigation.state.params.title || navigation.state.params.item.title
+    title: navigation.state.params.title || navigation.state.params.item.title,
+    header: null
   }});
 
   constructor(props) {
@@ -43,12 +45,20 @@ class Track extends BaseView {
       shuffleStyles.color = this.props.theme.palette.primaryColor;
     }
 
+    const config = {
+      velocityThreshold: 0.3,
+      directionalOffsetThreshold: 80
+    };
+
     return (
-      <View style={styles.container}>
+      <GestureRecognizer config={config} onSwipeDown={this._navigateBack} style={styles.container}>
+        <View style={styles.navigateBack}>
+          <Icon name='chevron-down' onPress={this._navigateBack} />
+        </View>
         <FastImage
           source={{uri: this._cover()}}
           resizeMode='cover'
-          style={{width: '100%', height: 400}}
+          style={{ width: '100%', height: 400}}
         />
         <ScrollView style={styles.titleScrollView} horizontal={true}>
           <Text style={styles.title}>{this._title()}</Text>
@@ -80,7 +90,7 @@ class Track extends BaseView {
         <View style={styles.sliderContainer}>
           <Slider style={styles.slider} step={0.001} minimumValue={0} maximumValue={1} value={this.state.duration !== 0 ? this.state.seekTime / this.state.duration : 0} onValueChange={this._onSlide.bind(this)} />
         </View>
-      </View>
+      </GestureRecognizer>
     );
   }
 
@@ -153,6 +163,10 @@ class Track extends BaseView {
     });
     this.props.navigation.dispatch(resetAction);
   }
+
+  _navigateBack = () => {
+    this.props.navigation.goBack();
+  }
 }
 
 export default withTheme(Track);
@@ -182,6 +196,15 @@ const styles = StyleSheet.create({
     backgroundColor: '#fff',
     alignItems: 'center',
     justifyContent: 'flex-start'
+  },
+  navigateBack: {
+    position: 'absolute',
+    zIndex: 100,
+    top: 0,
+    left: 0,
+    width: '100%',
+    flex: 1,
+    alignItems: 'center'
   },
   subtext: {
     height: 50,

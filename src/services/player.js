@@ -133,14 +133,17 @@ class Player {
   }
 
   next() {
+    this._unlazifying = false;
     return TrackPlayer.skipToNext().catch(() => {
       TrackPlayer.getQueue().then(queue => {
+        console.log(queue[0].id);
         TrackPlayer.skip(queue[0].id);
       });
     });
   }
 
   previous() {
+    this._unlazifying = false;
     return TrackPlayer.skipToPrevious().catch(() => {
       TrackPlayer.getQueue().then(queue => {
         TrackPlayer.skip(queue[queue.length - 1].id);
@@ -242,23 +245,37 @@ class Player {
   _unLazifyTrack(track) {
     if (!this._unlazifying) {
       TrackPlayer.pause();
-      this._unlazifying = true;
+      const unlazifyingId = this._lazyTrackUniqueId(track);
+      this._unlazifying = unlazifyingId;
       this._getIdIfNeeded(track)
       .then((newId) => {
+        // in case the user moved songs while this one was fetching
+        if (!this._unlazifying || this._unlazifying !== unlazifyingId) {
+          return;
+        }
         return this._getUrlIfNeeded(track)
-        .then(() => TrackPlayer.reset())
-        .then(() => this.addPlaylist())
         .then(() => {
-          return TrackPlayer.skip(newId)
+          // in case the user moved songs while this one was fetching
+          if (!this._unlazifying || this._unlazifying !== unlazifyingId) {
+            return;
+          }
+          TrackPlayer.reset()
+          .then(() => this.addPlaylist())
+          .then(() => TrackPlayer.skip(newId))
+          .then(() => {
+            this._unlazifying = false;
+            return TrackPlayer.play();
+          })
         });
-      }).then(() => {
-        this._unlazifying = false;
-        return TrackPlayer.play();
       }).catch(error => {
-        // this._unlazifying = false;
+        this._unlazifying = false;
         console.error(error);
       });
     }
+  }
+
+  _lazyTrackUniqueId(track) {
+    return track.id + track.title;
   }
 
   _getIdIfNeeded(track) {
@@ -346,11 +363,9 @@ class Player {
   _urlFor(song) {
     const offlinePath = OfflineManager.getSongLocation(song);
     if (offlinePath) {
-      console.log('Playing from offline path (' + song.title + '): ' + offlinePath);
       return 'file://' + offlinePath;
     } else {
       if (song.streamUrl) {
-        console.log('Song streamUrl (' + song.title + '): ' + song.streamUrl);
         return song.streamUrl;
       }
       return Utilities.urlFor(song);
