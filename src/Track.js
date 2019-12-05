@@ -1,5 +1,6 @@
 import React from 'react';
-import { ActivityIndicator, ScrollView, StyleSheet, Slider, Text, TouchableOpacity, View } from 'react-native';
+import { ActivityIndicator, ScrollView, StyleSheet, Text, TouchableOpacity, View } from 'react-native';
+import Slider from '@react-native-community/slider';
 import { withTheme } from 'react-native-material-ui';
 import FastImage from 'react-native-fast-image'
 import { StackActions, NavigationActions } from 'react-navigation';
@@ -53,7 +54,7 @@ class Track extends BaseView {
     return (
       <GestureRecognizer config={config} onSwipeDown={this._navigateBack} style={styles.container}>
         <View style={styles.navigateBack}>
-          <Icon name='chevron-down' onPress={this._navigateBack} />
+          <Icon name='chevron-down' iconStyle={styles.navigateBackIcon} onPress={this._navigateBack} />
         </View>
         <FastImage
           source={{uri: this._cover()}}
@@ -204,7 +205,11 @@ const styles = StyleSheet.create({
     left: 0,
     width: '100%',
     flex: 1,
-    alignItems: 'center'
+    alignItems: 'flex-start'
+  },
+  navigateBackIcon: {
+    backgroundColor: 'rgba(255,255,255,0.5)',
+    borderRadius: 10
   },
   subtext: {
     height: 50,

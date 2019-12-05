@@ -3,11 +3,12 @@ package com.strettomobilenext;
 import android.app.Application;
 
 import com.facebook.react.ReactApplication;
-import com.rnfs.RNFSPackage;
-import com.RNFetchBlob.RNFetchBlobPackage;
+import com.reactnativecommunity.slider.ReactSliderPackage;
 import com.dylanvann.fastimage.FastImageViewPackage;
+import com.reactnativecommunity.netinfo.NetInfoPackage;
 import com.oblador.vectoricons.VectorIconsPackage;
 import com.guichaguri.trackplayer.TrackPlayer;
+import com.RNFetchBlob.RNFetchBlobPackage;
 import com.facebook.react.ReactNativeHost;
 import com.facebook.react.ReactPackage;
 import com.facebook.react.shell.MainReactPackage;
@@ -28,11 +29,12 @@ public class MainApplication extends Application implements ReactApplication {
     protected List<ReactPackage> getPackages() {
       return Arrays.<ReactPackage>asList(
           new MainReactPackage(),
-            new RNFSPackage(),
-            new RNFetchBlobPackage(),
+            new ReactSliderPackage(),
             new FastImageViewPackage(),
+            new NetInfoPackage(),
             new VectorIconsPackage(),
-            new TrackPlayer()
+            new TrackPlayer(),
+            new RNFetchBlobPackage()
       );
     }
 

@@ -2,11 +2,11 @@ import React from 'react';
 import {
   ActivityIndicator,
   Linking,
-  NetInfo,
   StyleSheet,
   Text,
   View
 } from 'react-native';
+import NetInfo from "@react-native-community/netinfo";
 import { Button } from 'react-native-material-ui';
 import DataService from './services/dataService';
 import LoginService from './services/loginService';
@@ -32,7 +32,7 @@ export default class Login extends BaseView {
       if (url && url.split('://')[1]) {
         console.log('Initial url is: ' + url);
       } else {
-        NetInfo.getConnectionInfo().then((connectionInfo) => {
+        NetInfo.fetch().then((connectionInfo) => {
           if (connectionInfo.type === 'none' || connectionInfo.type === 'unknown') {
             PlaylistWrapper.loadFromLocal().then(this._loadingComplete.bind(this));
           } else {

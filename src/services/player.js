@@ -1,4 +1,4 @@
-import TrackPlayer from 'react-native-track-player';
+import TrackPlayer, { State, Capability } from 'react-native-track-player';
 import { AsyncStorage, ToastAndroid } from 'react-native';
 import Utilities from '../utilities';
 import OfflineManager from '../dataAccess/OfflineManager';
@@ -20,7 +20,7 @@ class Player {
     this._eventMappings = {
       'remote-play': this.playPause.bind(this),
       'remote-pause': this.playPause.bind(this),
-      // 'remote-stop': this.stop
+      'remote-stop': this.stop.bind(this),
       'remote-next': this.next.bind(this),
       'remote-previous': this.previous.bind(this),
       'playback-state': this._updateState.bind(this),
@@ -28,27 +28,52 @@ class Player {
       'playback-queue-ended': this._restartQueue.bind(this),
       'playback-error': this._playbackError.bind(this)
     };
+  
+    Object.keys(this._eventMappings).forEach(key => {
+      TrackPlayer.addEventListener(key, () => {
+        console.log(key);
+        console.log(this._eventMappings[key]);
+        this._eventMappings[key]().catch(error => {
+          console.error(error);
+        }).then(() => {
+          this._writeStateAndEmit.bind(this, key)();
+        });
+      });
+    });
 
-    TrackPlayer.registerEventHandler(this._trackPlayerEvent.bind(this));
-    TrackPlayer.setupPlayer().then(() => {
+    TrackPlayer.setupPlayer({}).then(() => {
       TrackPlayer.updateOptions({
+        stopWithApp: true,
         capabilities: [
-          TrackPlayer.CAPABILITY_PLAY,
-          TrackPlayer.CAPABILITY_PAUSE,
-          TrackPlayer.CAPABILITY_SEEK_TO,
-          TrackPlayer.CAPABILITY_SKIP_TO_NEXT,
-          TrackPlayer.CAPABILITY_SKIP_TO_PREVIOUS
-        ]
+          Capability.Play,
+          Capability.Pause,
+          Capability.Stop,
+          Capability.SeekTo,
+          Capability.SkipToNext,
+          Capability.SkipToPrevious
+        ],
+        notificationCapabilities: [
+          Capability.Play,
+          Capability.Pause,
+          // Capability.Stop,
+          Capability.SeekTo,
+          Capability.SkipToNext,
+          Capability.SkipToPrevious
+        ],
+        compactCapabilities: [
+          Capability.Play,
+          Capability.Pause
+        ],
       });
     });
   }
 
   get playing() {
-    return TrackPlayer && this._lastState === TrackPlayer.STATE_PLAYING;
+    return TrackPlayer && this._lastState === State.Playing;
   }
 
   get buffering() {
-    return this._unlazifying || TrackPlayer && this._lastState === TrackPlayer.STATE_BUFFERING;
+    return this._unlazifying || TrackPlayer && this._lastState === State.Buffering;
   }
 
   get currentTrack() {
@@ -112,9 +137,15 @@ class Player {
     this._writePlayState();
   }
 
+  stop() {
+    TrackPlayer.destroy();
+    return Promise.resolve();
+  }
+
   playPause() {
     console.log(this.playing ? 'Pausing' : 'Playing');
     this.playing ? TrackPlayer.pause() : TrackPlayer.play();
+    return Promise.resolve();
   }
 
   restoreFromState(state) {
@@ -179,14 +210,12 @@ class Player {
     };
   }
 
-  _trackPlayerEvent(event) {
+  _writeStateAndEmit(eventKey) {
     try {
-      return (this._eventMappings[event.type] || this._updateState.bind(this))(event).then(() => {
-        this._writePlayState();
-        this._emitChange();
-      });
+      this._writePlayState();
+      this._emitChange();
     } catch (error) {
-      console.log('Unable to find event for: ' + event.type);
+      console.error('Error for event type: ' + eventKey);
       console.error(error);
     }
   }
