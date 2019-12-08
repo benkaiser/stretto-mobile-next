@@ -8,6 +8,7 @@ export default class BaseListView extends BasePlayerView {
   renderContent() {
     return (
       <View style={styles.container}>
+        { this.header() }
         <FlatList
           data={this.getData()}
           keyExtractor={this.keyExtractor.bind(this)}
@@ -28,6 +29,10 @@ export default class BaseListView extends BasePlayerView {
 
   keyExtractor(item) {
     throw new Error('Unimplemented');
+  }
+
+  header() {
+    return null;
   }
 
   renderListItem(item) {

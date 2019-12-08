@@ -1,11 +1,15 @@
 import React from 'react';
-import { Alert } from 'react-native';
+import { Alert, StyleSheet, View } from 'react-native';
 import { ListItem } from 'react-native-material-ui';
+import OptionsMenu from 'react-native-options-menu';
 import BaseListView from './BaseListView';
 import PlaylistWrapper from './dataAccess/PlaylistWrapper';
 import DownloadManager from './services/DownloadManager';
 import OfflineManager from './dataAccess/OfflineManager';
 import SettingsManager from './dataAccess/SettingsManager';
+// import Icon from './components/icon';
+import Icon from 'react-native-vector-icons/FontAwesome';
+
 
 export default class Playlists extends BaseListView {
   static navigationOptions = { ...BaseListView.navigationOptions, ...{
@@ -34,7 +38,7 @@ export default class Playlists extends BaseListView {
     return item.title;
   }
 
-  renderListItem({ item }) {
+  renderListItem({ item, index }) {
     return (
       <ListItem
         key={item.title}
@@ -42,8 +46,18 @@ export default class Playlists extends BaseListView {
         centerElement={{
           primaryText: item.title,
         }}
+        rightElement={
+          <View>
+            <OptionsMenu
+              customButton={<Icon style={styles.icon} name='ellipsis-v' size={15} />}
+              options={['Download']}
+              actions={[this._startDownload.bind(this, item)]}
+            >
+
+            </OptionsMenu>
+          </View>
+        }
         onPress={this._itemClick.bind(this, item)}
-        onLongPress={this._longPress.bind(this, item)}
       />
     );
   }
@@ -63,7 +77,7 @@ export default class Playlists extends BaseListView {
   }
 
   _updateState() {
-    this.setState(this._getStateFromStores());
+    this._isMounted && this.setState(this._getStateFromStores());
   }
 
   _getStateFromStores() {
@@ -72,25 +86,14 @@ export default class Playlists extends BaseListView {
     };
   }
 
-  _longPress(item) {
-    Alert.alert(
-      'Download playlist?',
-      'This will be downloaded to your Music folder',
-      [
-        {
-          text: 'Cancel',
-          style: 'cancel'
-        },
-        {
-          text: 'OK',
-          onPress: this._startDownload.bind(this, item)
-        },
-      ],
-      {cancelable: false},
-    );
-  }
-
   _startDownload(item) {
     DownloadManager.downloadPlaylist(item);
   }
 }
+
+const styles = StyleSheet.create({
+  icon: {
+    paddingLeft: 15,
+    paddingRight: 15
+  }
+});
