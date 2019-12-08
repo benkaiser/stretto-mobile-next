@@ -2,6 +2,8 @@ import React from 'react';
 import { COLOR, ThemeContext, getTheme } from 'react-native-material-ui';
 import { BottomNavigation } from 'react-native-material-ui';
 import { StackActions, NavigationActions } from 'react-navigation';
+import { StatusBar, View } from 'react-native';
+import SettingsManager from './dataAccess/SettingsManager';
 
 const themeColor = COLOR.blue400;
 
@@ -26,7 +28,8 @@ const keymap = {
 export default class BaseView extends React.Component {
   static navigationOptions = {
     headerStyle: {
-      backgroundColor: themeColor
+      backgroundColor: themeColor,
+      marginTop: StatusBar.currentHeight
     },
     headerTintColor: COLOR.white
   };
@@ -42,6 +45,7 @@ export default class BaseView extends React.Component {
   render() {
     return (
       <ThemeContext.Provider value={getTheme(uiTheme)}>
+        <StatusBar backgroundColor={themeColor} barStyle="light-content" translucent={true} />
         { this.renderInternal() }
         { this._bottomNavigation() }
       </ThemeContext.Provider>
@@ -49,26 +53,34 @@ export default class BaseView extends React.Component {
   }
 
   _bottomNavigation() {
+    let navigationItems = [
+      <BottomNavigation.Action
+        key="library"
+        icon="audiotrack"
+        label="Library"
+        onPress={() => this._navigate('Playlists')}
+      />
+    ];
+    !SettingsManager.getSetting('offlineMode', false) &&
+      navigationItems.push(
+        <BottomNavigation.Action
+          key="search"
+          icon="search"
+          label="Search"
+          onPress={() => this._navigate('Search')}
+        />
+      );
+    navigationItems.push(
+      <BottomNavigation.Action
+        key="settings"
+        icon="settings"
+        label="Settings"
+        onPress={() => this._navigate('Settings')}
+      />
+    );
     return (
       <BottomNavigation active={this._activeKey()} hidden={false} >
-        <BottomNavigation.Action
-            key="library"
-            icon="audiotrack"
-            label="Library"
-            onPress={() => this._navigate('Playlists')}
-        />
-        <BottomNavigation.Action
-            key="search"
-            icon="search"
-            label="Search"
-            onPress={() => this._navigate('Search')}
-        />
-        <BottomNavigation.Action
-            key="settings"
-            icon="settings"
-            label="Settings"
-            onPress={() => this._navigate('Settings')}
-        />
+        { navigationItems }
       </BottomNavigation>
     );
   }

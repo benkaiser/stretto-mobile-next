@@ -1,6 +1,6 @@
 import React from 'react';
 import BasePlayerView from './BasePlayerView';
-import { Alert, View, StyleSheet, Text, FlatList, ToastAndroid } from 'react-native';
+import { Alert, View, StatusBar, StyleSheet, Text, FlatList, ToastAndroid } from 'react-native';
 import { SearchBar } from 'react-native-elements';
 import FastImage from 'react-native-fast-image';
 import { ListItem } from 'react-native-material-ui';
@@ -165,6 +165,7 @@ export default class Search extends BasePlayerView {
 
 const styles = StyleSheet.create({
   container: {
+    paddingTop: StatusBar.currentHeight,
     flex: 1
   },
   image: {

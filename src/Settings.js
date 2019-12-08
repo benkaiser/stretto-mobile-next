@@ -19,7 +19,11 @@ export default class Settings extends BasePlayerView {
       <View style={styles.container}>
         <View>
           <Text>Auto-download when playing (this will double the data usage on a first listen but reduce all future plays)</Text>
-          <Switch value={SettingsManager.getSetting('autoDownload', false)} onValueChange={this._toggleAutoDownload} />
+          <Switch value={SettingsManager.getSetting('autoDownload', false)} onValueChange={this._toggleValue.bind(this, 'autoDownload')} />
+        </View>
+        <View>
+          <Text>Offline Mode (only show offline music)</Text>
+          <Switch value={SettingsManager.getSetting('offlineMode', false)} onValueChange={this._toggleValue.bind(this, 'offlineMode')} />
         </View>
         <Button style={styles.logout} raised accent text="Logout" onPress={this._logout.bind(this)} />
       </View>
@@ -32,8 +36,8 @@ export default class Settings extends BasePlayerView {
     });
   }
 
-  _toggleAutoDownload = (toggleValue) => {
-    SettingsManager.setSetting('autoDownload', toggleValue);
+  _toggleValue = (settingKey, toggleValue) => {
+    SettingsManager.setSetting(settingKey, toggleValue);
     this.forceUpdate();
   }
 }

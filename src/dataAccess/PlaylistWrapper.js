@@ -1,4 +1,6 @@
 import { AsyncStorage } from 'react-native';
+import SettingsManager from './SettingsManager';
+import OfflineManager from './OfflineManager';
 
 const listeners = [];
 
@@ -18,6 +20,11 @@ export default class PlaylistWrapper {
   }
 
   static getPlaylists() {
+    if (SettingsManager.getSetting('offlineMode', false) && PlaylistWrapper._playlists) {
+      return PlaylistWrapper._playlists.filter(playlist => {
+        return playlist.songs.some(song => OfflineManager.getSongLocation(song))
+      });
+    }
     return PlaylistWrapper._playlists;
   }
 

@@ -1,5 +1,5 @@
 import React from 'react';
-import { ActivityIndicator, ScrollView, StyleSheet, Text, TouchableOpacity, View } from 'react-native';
+import { ActivityIndicator, ScrollView, StyleSheet, StatusBar, Text, TouchableOpacity, View } from 'react-native';
 import Slider from '@react-native-community/slider';
 import { withTheme } from 'react-native-material-ui';
 import FastImage from 'react-native-fast-image'
@@ -53,6 +53,7 @@ class Track extends BaseView {
 
     return (
       <GestureRecognizer config={config} onSwipeDown={this._navigateBack} style={styles.container}>
+        <StatusBar backgroundColor='rgba(0,0,0,0.2)' barStyle="light-content" translucent={true} />
         <View style={styles.navigateBack}>
           <Icon name='chevron-down' iconStyle={styles.navigateBackIcon} onPress={this._navigateBack} />
         </View>
@@ -201,7 +202,7 @@ const styles = StyleSheet.create({
   navigateBack: {
     position: 'absolute',
     zIndex: 100,
-    top: 0,
+    top: StatusBar.currentHeight,
     left: 0,
     width: '100%',
     flex: 1,

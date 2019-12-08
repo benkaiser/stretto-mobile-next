@@ -4,6 +4,8 @@ import { ListItem } from 'react-native-material-ui';
 import BaseListView from './BaseListView';
 import PlaylistWrapper from './dataAccess/PlaylistWrapper';
 import DownloadManager from './services/DownloadManager';
+import OfflineManager from './dataAccess/OfflineManager';
+import SettingsManager from './dataAccess/SettingsManager';
 
 export default class Playlists extends BaseListView {
   static navigationOptions = { ...BaseListView.navigationOptions, ...{
@@ -48,8 +50,16 @@ export default class Playlists extends BaseListView {
 
   _itemClick(item) {
     this.props.navigation.push('Playlist', {
-      item: item
+      item: this._filterOfline(item)
     });
+  }
+
+  _filterOfline(item) {
+    if (SettingsManager.getSetting('offlineMode', false)) {
+      item = { ...item };
+      item.songs = item.songs.filter(song => OfflineManager.getSongLocation(song));
+    }
+    return item;
   }
 
   _updateState() {
