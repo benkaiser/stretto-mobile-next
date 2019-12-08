@@ -52,9 +52,7 @@ export default class Playlists extends BaseListView {
               customButton={<Icon style={styles.icon} name='ellipsis-v' size={15} />}
               options={['Download']}
               actions={[this._startDownload.bind(this, item)]}
-            >
-
-            </OptionsMenu>
+            />
           </View>
         }
         onPress={this._itemClick.bind(this, item)}
@@ -94,6 +92,8 @@ export default class Playlists extends BaseListView {
 const styles = StyleSheet.create({
   icon: {
     paddingLeft: 15,
-    paddingRight: 15
+    paddingRight: 15,
+    paddingTop: 10,
+    paddingBottom: 10
   }
 });

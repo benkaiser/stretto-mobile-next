@@ -1,11 +1,14 @@
 import React from 'react';
 import { ListItem } from 'react-native-material-ui';
-import { Alert, StyleSheet, Text, View } from 'react-native';
+import { Alert, StyleSheet, Text, View, ToastAndroid } from 'react-native';
 import FastImage from 'react-native-fast-image'
+import OptionsMenu from 'react-native-options-menu';
 import BaseListView from './BaseListView';
-import Icon from './components/icon';
+import IconComponent from './components/icon';
+import Icon from 'react-native-vector-icons/FontAwesome';
 import OfflineManager from './dataAccess/OfflineManager';
 import DownloadManager from './services/DownloadManager';
+import Youtube from './services/Youtube';
 
 export default class Playlist extends BaseListView {
   static navigationOptions = ({ navigation }) => ({ ...BaseListView.navigationOptions, ...{
@@ -36,13 +39,16 @@ export default class Playlist extends BaseListView {
   }
 
   renderListItem({ item }) {
+    const options = ['Download'];
+    if (item.id && item.id.indexOf('s_') !== 0) {
+      options.push('Start Youtube Mix');
+    }
     return (
       <ListItem
         key={item.title}
         height={50}
         divider
         onPress={this._itemClick.bind(this, item)}
-        onLongPress={this._longPress.bind(this, item)}
         centerElement={
           <View style={styles.listItem}>
             <FastImage
@@ -53,8 +59,13 @@ export default class Playlist extends BaseListView {
           </View>
         }
         rightElement={
-          <View>
-            { this._isOffline(item) && <Icon name='plane' size={15} /> }
+          <View style={styles.rightIcons}>
+            { this._isOffline(item) && <IconComponent name='plane' size={15} /> }
+            <OptionsMenu
+              customButton={<Icon style={styles.icon} name='ellipsis-v' size={15} />}
+              options={options}
+              actions={[this._startDownload.bind(this, item), this._startYoutubeMix.bind(this, item)]}
+            />
           </View>
         }
       />
@@ -71,29 +82,18 @@ export default class Playlist extends BaseListView {
       playlistItems: this.state.songs
     });
   }
-
-  _longPress(item) {
-    Alert.alert(
-      'Download song?',
-      'This will be downloaded to your Music folder',
-      [
-        {
-          text: 'Cancel',
-          style: 'cancel'
-        },
-        {
-          text: 'OK',
-          onPress: this._startDownload.bind(this, item)
-        },
-      ],
-      {cancelable: false},
-    );
-  }
   
   _startDownload(item) {
     DownloadManager.downloadSong(item).then(() => {
       this.forceUpdate();
     })
+  }
+
+  _startYoutubeMix(item) {
+    ToastAndroid.show('Getting mix...', ToastAndroid.SHORT);
+    Youtube.getYoutubeMix(item).then(mix => {
+      
+    });
   }
 }
 
@@ -107,6 +107,7 @@ const styles = StyleSheet.create({
   },
   text: {
     marginLeft: 10,
+    marginRight: 10,
     fontSize: 18,
     lineHeight: 50,
     color: '#000'
@@ -114,5 +115,17 @@ const styles = StyleSheet.create({
   listItem: {
     flex: 1,
     flexDirection: 'row'
+  },
+  icon: {
+    paddingLeft: 15,
+    paddingRight: 15,
+    paddingTop: 10,
+    paddingBottom: 10
+  },
+  rightIcons: {
+    flex: 1,
+    flexDirection: 'row',
+    justifyContent: 'flex-end',
+    maxWidth: 60
   }
 });

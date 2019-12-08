@@ -22,7 +22,7 @@ export default {
       return 'https://raw.githubusercontent.com/anars/blank-audio/master/10-seconds-of-silence.mp3';
     }
     if (song.id.indexOf('s_') === 0) {
-      return `https://api.soundcloud.com/tracks/${song.id.replace('s_', '')}/stream?client_id=UW9ajvMgVdMMW3cdeBi8lPfN6dvOVGji`;
+      return `https://api.soundcloud.com/tracks/${song.id.replace('s_', '')}/stream?client_id=3c2fb8cfc81c40dcfb99bb9f786f561c`;
     }
   },
   downloadDir: RNFetchBlob.fs.dirs.MusicDir + '/stretto/'
