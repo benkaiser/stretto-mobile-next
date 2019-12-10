@@ -14,6 +14,9 @@ export default {
     return a;
   },
   urlFor: (song) => {
+    if (!song) {
+      return 'https://raw.githubusercontent.com/anars/blank-audio/master/10-seconds-of-silence.mp3';
+    }
     if (song.streamUrl) {
       return song.streamUrl;
     }

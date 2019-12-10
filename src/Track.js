@@ -1,5 +1,5 @@
 import React from 'react';
-import { ActivityIndicator, ScrollView, StyleSheet, StatusBar, Text, TouchableOpacity, View } from 'react-native';
+import { ActivityIndicator, ScrollView, StyleSheet, StatusBar, Text, TouchableOpacity, View, ToastAndroid } from 'react-native';
 import Slider from '@react-native-community/slider';
 import { withTheme } from 'react-native-material-ui';
 import FastImage from 'react-native-fast-image'
@@ -8,8 +8,10 @@ import GestureRecognizer, {swipeDirections} from 'react-native-swipe-gestures';
 
 import BaseView from './BaseView';
 import Icon from './components/icon';
+import Icon5 from './components/icon5';
 import Player from './services/player';
 import PlaylistWrapper from './dataAccess/PlaylistWrapper';
+import Youtube from './services/Youtube';
 
 class Track extends BaseView {
   static navigationOptions = ({ navigation }) => ({ ...BaseView.navigationOptions, ...{
@@ -55,7 +57,9 @@ class Track extends BaseView {
       <GestureRecognizer config={config} onSwipeDown={this._navigateBack} style={styles.container}>
         <StatusBar backgroundColor='rgba(0,0,0,0.2)' barStyle="light-content" translucent={true} />
         <View style={styles.navigateBack}>
-          <Icon name='chevron-down' iconStyle={styles.navigateBackIcon} onPress={this._navigateBack} />
+          <Icon5 name='chevron-down' iconStyle={styles.navigateBackIcon} onPress={this._navigateBack} />
+          <View styles={styles.iconSpacer} />
+          { this._id() && this._id().indexOf('y_') === 0 && <Icon5 name='dice-five' iconStyle={styles.mixIcon} onPress={this._startMix} /> }
         </View>
         <FastImage
           source={{uri: this._cover()}}
@@ -112,6 +116,10 @@ class Track extends BaseView {
     return (this.state.currentTrack || this._item).cover;
   }
 
+  _id() {
+    return (this.state.currentTrack || this._item || {}).id;
+  }
+
   _onPlayPause() {
     Player.playPause();
   }
@@ -122,7 +130,7 @@ class Track extends BaseView {
     }
     const currentTrackModified = { ...Player.currentTrack };
     if (Player.currentTrack) {
-      const matchedSongs = PlaylistWrapper.getSongs().filter(song => Player.currentTrack && song.id === Player.currentTrack.id);
+      const matchedSongs = PlaylistWrapper.getSongs().filter(song => Player.currentTrack && song && song.id === Player.currentTrack.id);
       if (matchedSongs && matchedSongs[0]) {
         currentTrackModified.album = matchedSongs[0].album;
       }
@@ -169,6 +177,19 @@ class Track extends BaseView {
   _navigateBack = () => {
     this.props.navigation.goBack();
   }
+
+  _startMix = () => {
+    const song = this.state.currentTrack || this._item;
+    ToastAndroid.show('Getting mix...', ToastAndroid.SHORT);
+    Youtube.getYoutubeMix(song).then(mix => {
+      this.props.navigation.push('Playlist', {
+        item: {
+          title: 'Youtube Mix for ' + song.artist + ' - ' + song.title,
+          songs: mix.items
+        }
+      });
+    });
+  }
 }
 
 export default withTheme(Track);
@@ -204,13 +225,28 @@ const styles = StyleSheet.create({
     zIndex: 100,
     top: StatusBar.currentHeight,
     left: 0,
-    width: '100%',
+    right: 10,
+    // width: '100%',
     flex: 1,
-    alignItems: 'flex-start'
+    flexDirection: 'row',
+    justifyContent: 'space-between'
   },
   navigateBackIcon: {
     backgroundColor: 'rgba(255,255,255,0.5)',
-    borderRadius: 10
+    paddingLeft: 3,
+    paddingRight: 3,
+    borderRadius: 4
+  },
+  iconSpacer: {
+    flex: 2
+  },
+  mixIcon: {
+    backgroundColor: 'rgba(255,255,255,0.5)',
+    padding: 5,
+    paddingTop: 3,
+    paddingBottom: 3,
+    borderRadius: 5,
+    alignSelf: 'flex-end'
   },
   subtext: {
     height: 50,

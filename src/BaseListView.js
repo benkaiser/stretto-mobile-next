@@ -1,6 +1,7 @@
 import React from 'react';
-import { StyleSheet, FlatList, View } from 'react-native';
+import { StyleSheet, FlatList, ToastAndroid, View } from 'react-native';
 import BasePlayerView from './BasePlayerView';
+import Youtube from './services/Youtube';
 
 export default class BaseListView extends BasePlayerView {
   static navigationOptions = BasePlayerView.navigationOptions;
@@ -37,6 +38,18 @@ export default class BaseListView extends BasePlayerView {
 
   renderListItem(item) {
     throw new Error('Unimplemented');
+  }
+  
+  startYoutubeMix(item) {
+    ToastAndroid.show('Getting mix...', ToastAndroid.SHORT);
+    Youtube.getYoutubeMix(item).then(mix => {
+      this.props.navigation.push('Playlist', {
+        item: {
+          title: 'Youtube Mix for ' + item.artist + ' - ' + item.title,
+          songs: mix.items
+        }
+      });
+    });
   }
 
   _getItemLayout(item, index) {

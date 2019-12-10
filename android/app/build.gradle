@@ -106,8 +106,8 @@ android {
         applicationId "com.strettomobilenext"
         minSdkVersion rootProject.ext.minSdkVersion
         targetSdkVersion rootProject.ext.targetSdkVersion
-        versionCode 2
-        versionName "1.0.1"
+        versionCode 4
+        versionName "1.0.3"
     }
     splits {
         abi {
@@ -161,6 +161,7 @@ def jscFlavor = 'org.webkit:android-jsc:+'
 def enableHermes = project.ext.react.get("enableHermes", false);
 
 dependencies {
+    implementation project(':react-native-fs')
     implementation project(':@react-native-community_slider')
     implementation project(':react-native-fast-image')
     implementation project(':@react-native-community_netinfo')

@@ -1,5 +1,5 @@
 import TrackPlayer, { State, Capability } from 'react-native-track-player';
-import { AsyncStorage, ToastAndroid } from 'react-native';
+import { AsyncStorage } from 'react-native';
 import Utilities from '../utilities';
 import OfflineManager from '../dataAccess/OfflineManager';
 import SearchService from './SearchService';
@@ -32,7 +32,6 @@ class Player {
     Object.keys(this._eventMappings).forEach(key => {
       TrackPlayer.addEventListener(key, () => {
         console.log(key);
-        console.log(this._eventMappings[key]);
         this._eventMappings[key]().catch(error => {
           console.error(error);
         }).then(() => {
@@ -113,16 +112,19 @@ class Player {
 
   addPlaylist(onlyClearedUpcoming) {
     const indexOfCurrentSong = this._playlist.findIndex(item => {
-      return item.id == (this._currentTrack ? this._currentTrack.id : this._song.id)
+      return item && item.id == (this._currentTrack ? this._currentTrack.id : (this._song ? this._song.id : -1))
     });
     const songsWithCurrentTrackFirst = this._playlist.slice(indexOfCurrentSong).concat(this._playlist.slice(0, indexOfCurrentSong));
-    if (onlyClearedUpcoming && this._currentTrack && this._currentTrack.id == songsWithCurrentTrackFirst[0].id) {
+    if (onlyClearedUpcoming && this._currentTrack && songsWithCurrentTrackFirst.length > 0 && this._currentTrack && this._currentTrack.id == songsWithCurrentTrackFirst[0].id) {
       songsWithCurrentTrackFirst.shift();
     }
     return TrackPlayer.add(songsWithCurrentTrackFirst.map((song) => this._songToTrackPlayerItem(song)));
   }
 
   playSong(song, playlist, startPaused) {
+    if (!song || !playlist) {
+      return;
+    }
     this._originalPlaylist = playlist.slice(0);
     this._song = song;
     this._reshufflePlaylistIfNeeded();
@@ -167,7 +169,9 @@ class Player {
     this._unlazifying = false;
     return TrackPlayer.skipToNext().catch(() => {
       TrackPlayer.getQueue().then(queue => {
-        console.log(queue[0].id);
+        if (!queue[0]) {
+          return;
+        }
         TrackPlayer.skip(queue[0].id);
       });
     });
@@ -177,6 +181,9 @@ class Player {
     this._unlazifying = false;
     return TrackPlayer.skipToPrevious().catch(() => {
       TrackPlayer.getQueue().then(queue => {
+        if (!queue[queue.length - 1]) {
+          return;
+        }
         TrackPlayer.skip(queue[queue.length - 1].id);
       });
     });
@@ -200,6 +207,9 @@ class Player {
   }
 
   _songToTrackPlayerItem(song) {
+    if (!song) {
+      return;
+    }
     return {
       id: song.id,
       url: this._urlFor(song),
@@ -222,8 +232,10 @@ class Player {
 
   _playbackError(event) {
     console.log('Error with playback, skipping song');
-    console.log(event);
     const nextTrack = this._nextTrack(this._currentTrack);
+    if (!nextTrack) {
+      return;
+    }
     return TrackPlayer.reset()
     .then(() => this.addPlaylist())
     .then(() => TrackPlayer.skip(nextTrack.id))
@@ -362,11 +374,14 @@ class Player {
   }
 
   _nextTrack(track) {
-    return this._playlist[this._playlist.findIndex((item) => item.id == track.id) + 1] || this._playlist[0];
+    if (!track) {
+      return this._playlist[0];
+    }
+    return this._playlist[this._playlist.findIndex((item) => item && item.id == track.id) + 1] || this._playlist[0];
   }
 
   _playlistItemForTrack(track) {
-    return this._playlist.filter((item) => item.id == track.id)[0];
+    return this._playlist.filter((item) => item && item.id == track.id)[0];
   }
 
   _autoDownload(track) {
@@ -374,19 +389,17 @@ class Player {
       return;
     }
     const fullDetails = this._playlistItemForTrack(track);
-    DataService.isSongInLibrary(fullDetails)
-    .then(isInLibrary => {
-      if (!isInLibrary) {
-        return;
-      }
-      const alreadyDownloaded = !!OfflineManager.getSongLocation(fullDetails);
-      if (alreadyDownloaded) {
-        return;
-      }
-      console.log('Auto-downloading track');
-      console.log(fullDetails);
-      return DownloadManager.downloadSong(fullDetails);
-    });
+    const isInLibrary = DataService.isSongInLibrary(fullDetails)
+    if (!isInLibrary) {
+      return;
+    }
+    const alreadyDownloaded = !!OfflineManager.getSongLocation(fullDetails);
+    if (alreadyDownloaded) {
+      return;
+    }
+    console.log('Auto-downloading track');
+    console.log(fullDetails);
+    return DownloadManager.downloadSong(fullDetails);
   }
 
   _urlFor(song) {

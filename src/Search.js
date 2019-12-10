@@ -4,8 +4,11 @@ import { Alert, View, StatusBar, StyleSheet, Text, FlatList, ToastAndroid } from
 import { SearchBar } from 'react-native-elements';
 import FastImage from 'react-native-fast-image';
 import { ListItem } from 'react-native-material-ui';
+import OptionsMenu from 'react-native-options-menu';
+import Icon from 'react-native-vector-icons/FontAwesome';
 import SearchService from './services/SearchService';
 import DataService from './services/dataService';
+import Youtube from './services/Youtube';
 
 const SEARCH_WAIT = 300;
 
@@ -49,7 +52,7 @@ export default class Search extends BasePlayerView {
         />
         <FlatList
           data={this.state.results}
-          keyExtractor={item => item.id}
+          keyExtractor={item => item && item.id}
           renderItem={this._renderListItem.bind(this)}
           getItemLayout={this._getItemLayout.bind(this)}
         />
@@ -64,7 +67,6 @@ export default class Search extends BasePlayerView {
         height={50}
         divider
         onPress={this._itemClick.bind(this, item)}
-        onLongPress={this._longPress.bind(this, item)}
         centerElement={
           <View style={styles.listItem}>
             <FastImage
@@ -72,6 +74,15 @@ export default class Search extends BasePlayerView {
               style={styles.image}
             />
             <Text style={styles.text}>{item.title}</Text>
+          </View>
+        }
+        rightElement={
+          <View>
+            <OptionsMenu
+              customButton={<Icon style={styles.icon} name='ellipsis-v' size={15} />}
+              options={['Add to Library', 'Start Youtube Mix']}
+              actions={[this._addSongToLibrary.bind(this, item), this._startYoutubeMix.bind(this, item)]}
+            />
           </View>
         }
       />
@@ -85,24 +96,6 @@ export default class Search extends BasePlayerView {
     });
   }
 
-  _longPress(item) {
-    Alert.alert(
-      'Add to library?',
-      'Are you sure you want to add this search result to your library?',
-      [
-        {
-          text: 'Cancel',
-          style: 'cancel'
-        },
-        {
-          text: 'Add it!',
-          onPress: this._addSongToLibrary.bind(this, item)
-        },
-      ],
-      {cancelable: false},
-    );
-  }
-
   _addSongToLibrary(song) {
     this._getLazyItem(song).then(fullSong => {
       DataService.addSongToLibrary(fullSong).then(() => {
@@ -111,7 +104,22 @@ export default class Search extends BasePlayerView {
     });
   }
 
+  _startYoutubeMix(song) {
+    this._getLazyItem(song).then(fullSong => {
+      ToastAndroid.show('Getting mix...', ToastAndroid.SHORT);
+      Youtube.getYoutubeMix(fullSong).then(mix => {
+        this.props.navigation.push('Playlist', {
+          item: {
+            title: 'Youtube Mix for ' + fullSong.artist + ' - ' + fullSong.title,
+            songs: mix.items
+          }
+        });
+      });
+    });
+  }
+
   _getLazyItem(song) {
+    ToastAndroid.show('Finding youtube backing track...', ToastAndroid.SHORT);
     return SearchService.getYoutubeId(song).then(id => {
       song.id = `y_${id}`;
       song.url = `https://www.youtube.com/watch?v=${id}`;
@@ -184,5 +192,11 @@ const styles = StyleSheet.create({
   listItem: {
     flex: 1,
     flexDirection: 'row'
+  },
+  icon: {
+    paddingLeft: 15,
+    paddingRight: 15,
+    paddingTop: 10,
+    paddingBottom: 10
   }
 });

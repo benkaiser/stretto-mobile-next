@@ -56,6 +56,9 @@ export class DownloadManager {
   }
 
   _downloadSong(song) {
+    if (!song || !song.id) {
+      return;
+    }
     let promise;
     if (song.id.indexOf('s_') === 0 || song.streamUrl) {
       promise = Promise.resolve(Utilities.urlFor(song));

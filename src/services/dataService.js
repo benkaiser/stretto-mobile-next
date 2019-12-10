@@ -4,6 +4,8 @@ import { AsyncStorage } from 'react-native';
 import PlaylistWrapper from '../dataAccess/PlaylistWrapper';
 
 export default class DataService {
+  static _lastLocalData;
+
   static getData(options) {
     if (!options || !options.token || !options.email) {
       throw new Error('Attempt to get data without token or email');
@@ -24,6 +26,9 @@ export default class DataService {
   }
 
   static addSongToLibrary(song) {
+    if (!song) {
+      return;
+    }
     return fetch(Config.BASE_URL + '/addsong', {
       credentials: 'same-origin',
       method: 'POST',
@@ -42,14 +47,14 @@ export default class DataService {
         throw new Error(serverResponseWithVersion);
       }
       return this._getLocalData().then(localData => {
-        localData.playlists = localData.playlists.map(playlist => {
-          if (playlist.title === 'Library') {
-            playlist.songs.push(song.id);
-          }
-          return playlist;
-        });
-        const doesSongExist = localData.songs.filter(localSong => localSong.id === song.id).length > 0;
+        const doesSongExist = localData.songs.filter(localSong => localSong && localSong.id === song.id).length > 0;
         if (!doesSongExist) {
+          localData.playlists = localData.playlists.map(playlist => {
+            if (playlist.title === 'Library') {
+              playlist.songs.push(song.id);
+            }
+            return playlist;
+          });
           localData.songs.push(song);
         }
         localData.version = serverResponseWithVersion.version;
@@ -61,11 +66,7 @@ export default class DataService {
   }
 
   static isSongInLibrary(song) {
-    return this._getLocalData().then(localData => {
-      return localData.songs.some(localSong => localSong.id === song.id);
-    }).catch(() => {
-      return false;
-    });
+    return this._lastLocalData ? this._lastLocalData.songs.some(localSong => localSong && localSong.id === song.id) : false;
   }
 
   static _login(token, email) {
@@ -130,10 +131,14 @@ export default class DataService {
 
   static _setLocalData(data) {
     AsyncStorage.setItem('USER_DATA', JSON.stringify(data));
+    this._lastLocalData = data;
     PlaylistWrapper.setData(data);
   }
 
   static _getLocalData() {
-    return AsyncStorage.getItem('USER_DATA').then(data => JSON.parse(data));
+    return AsyncStorage.getItem('USER_DATA').then(data => JSON.parse(data)).then(localData => {
+      this._lastLocalData = localData;
+      return localData;
+    })
   }
 }

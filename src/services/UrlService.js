@@ -5,10 +5,12 @@ const urlCache = {};
 export default class SearchService {
   static getYoutubeAudioUrl(track) {
     var resolveUrl, failUrl;
+    if (!track) {
+      return;
+    }
     if (urlCache[track]) {
       return Promise.resolve(urlCache[track]);
     }
-    console.log(track.id.replace('y_',''));
     ytdl.getInfo(track.id.replace('y_',''), {}, (err, info) => {
       if (err) {
         return failUrl(err);

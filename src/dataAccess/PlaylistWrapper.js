@@ -37,7 +37,7 @@ export default class PlaylistWrapper {
       return {
         ...playlist,
         songs: playlist.songs.map((songId) => {
-          return data.songs.filter((item) => item.id === songId)[0];
+          return data.songs.filter((item) => item && item.id === songId)[0];
         }).filter(item => !!item)
       }
     });

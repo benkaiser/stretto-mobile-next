@@ -8,7 +8,7 @@ import IconComponent from './components/icon';
 import Icon from 'react-native-vector-icons/FontAwesome';
 import OfflineManager from './dataAccess/OfflineManager';
 import DownloadManager from './services/DownloadManager';
-import Youtube from './services/Youtube';
+import DataService from './services/dataService';
 
 export default class Playlist extends BaseListView {
   static navigationOptions = ({ navigation }) => ({ ...BaseListView.navigationOptions, ...{
@@ -35,17 +35,31 @@ export default class Playlist extends BaseListView {
   }
 
   keyExtractor(item) {
-    return item.title;
+    if (!item) {
+      return '';
+    }
+    return item.id + item.artist + item.title;
   }
 
   renderListItem({ item }) {
-    const options = ['Download'];
-    if (item.id && item.id.indexOf('s_') !== 0) {
+    const options = [];
+    const optionsMethods = [];
+    if (DataService.isSongInLibrary(item)) {
+      if (!this._isOffline(item)) {
+        options.push('Download');
+        optionsMethods.push(this._startDownload.bind(this, item));
+      }
+    } else {
+      options.push('Add to Library');
+      optionsMethods.push(this._addToLibrary.bind(this, item));
+    }
+    if (item && item.id && item.id.indexOf('s_') !== 0) {
       options.push('Start Youtube Mix');
+      optionsMethods.push(this.startYoutubeMix.bind(this, item));
     }
     return (
       <ListItem
-        key={item.title}
+        key={this.keyExtractor(item)}
         height={50}
         divider
         onPress={this._itemClick.bind(this, item)}
@@ -61,11 +75,11 @@ export default class Playlist extends BaseListView {
         rightElement={
           <View style={styles.rightIcons}>
             { this._isOffline(item) && <IconComponent name='plane' size={15} /> }
-            <OptionsMenu
+            { options.length > 0 && <OptionsMenu
               customButton={<Icon style={styles.icon} name='ellipsis-v' size={15} />}
               options={options}
-              actions={[this._startDownload.bind(this, item), this._startYoutubeMix.bind(this, item)]}
-            />
+              actions={optionsMethods}
+            /> }
           </View>
         }
       />
@@ -89,10 +103,10 @@ export default class Playlist extends BaseListView {
     })
   }
 
-  _startYoutubeMix(item) {
-    ToastAndroid.show('Getting mix...', ToastAndroid.SHORT);
-    Youtube.getYoutubeMix(item).then(mix => {
-      
+  _addToLibrary(item) {
+    console.log(item);
+    DataService.addSongToLibrary(item).then(() => {
+      ToastAndroid.show('Added \'' + item.title + '\' to Library', ToastAndroid.SHORT);
     });
   }
 }
