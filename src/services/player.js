@@ -28,7 +28,7 @@ class Player {
       'playback-queue-ended': this._restartQueue.bind(this),
       'playback-error': this._playbackError.bind(this)
     };
-  
+
     Object.keys(this._eventMappings).forEach(key => {
       TrackPlayer.addEventListener(key, () => {
         console.log(key);
@@ -236,9 +236,7 @@ class Player {
     if (!nextTrack) {
       return;
     }
-    return TrackPlayer.reset()
-    .then(() => this.addPlaylist())
-    .then(() => TrackPlayer.skip(nextTrack.id))
+    return TrackPlayer.skip(nextTrack.id)
     .then(() => TrackPlayer.play());
   }
 
@@ -265,6 +263,12 @@ class Player {
     return TrackPlayer.getCurrentTrack()
     .then(id => TrackPlayer.getTrack(id))
     .then((track) => {
+      if (!track) {
+        return;
+      }
+      if (!this._playlistItemForTrack(track)) {
+        return;
+      }
       if (track && (track.lazy || this._noStreamUrl(track))) {
         this._unLazifyTrack(track);
       } else {
@@ -306,10 +310,11 @@ class Player {
           .then(() => {
             this._unlazifying = false;
             return TrackPlayer.play();
-          })
+          });
         });
       }).catch(error => {
         this._unlazifying = false;
+        this.next();
         console.error(error);
       });
     }
@@ -342,7 +347,7 @@ class Player {
   _getUrlIfNeeded(track) {
     console.log(track);
     if (!this._noStreamUrl(track)) {
-      return Promise.resolve();
+      return Promise.resolve(track.url);
     }
     return UrlService.getYoutubeAudioUrl(track)
     .then(url => {
@@ -354,6 +359,7 @@ class Player {
       });
       this._song && (this._song.streamUrl = url);
       track.streamUrl = url;
+      return url;
     });
   }
 
@@ -381,7 +387,7 @@ class Player {
   }
 
   _playlistItemForTrack(track) {
-    return this._playlist.filter((item) => item && item.id == track.id)[0];
+    return this._playlist && this._playlist.filter((item) => item && item.id == track.id)[0];
   }
 
   _autoDownload(track) {

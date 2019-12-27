@@ -76,7 +76,9 @@ export class DownloadManager {
         OfflineManager.addSong(song, res.path());
         console.log('The file saved to ', res.path())
       });
-    })
+    }).catch((error) => {
+      ToastAndroid.show(`Error downloading: ${song.title}. ${error}`);
+    });
   }
 
   _requestPermissionsAndMakeDir() {
