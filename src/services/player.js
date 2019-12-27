@@ -314,7 +314,7 @@ class Player {
         });
       }).catch(error => {
         this._unlazifying = false;
-        this.next();
+        this.next().then(() => TrackPlayer.play());
         console.error(error);
       });
     }
