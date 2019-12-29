@@ -34,10 +34,10 @@ class Player {
     };
 
     Object.keys(this._eventMappings).forEach(key => {
-      TrackPlayer.addEventListener(key, (code) => {
+      TrackPlayer.addEventListener(key, (arg) => {
         // this._log(key);
         try {
-          this._eventMappings[key](code).catch(error => {
+          this._eventMappings[key](arg).catch(error => {
             this._log(error);
           }).then(() => {
             this._writeStateAndEmit.bind(this, key)();
@@ -334,6 +334,11 @@ class Player {
       TrackPlayer.getPosition(),
       TrackPlayer.getDuration()
     ]).then(([state, time, duration]) => {
+      // because we don't put our songs in the queue, we have to manually detect when playback
+      // stops at the end of a song and move forward
+      if (this._lastState !== State.Stopped && state == State.Stopped && time >= duration) {
+        this.next();
+      }
       this._lastState = state;
       this._seekTime = time;
       this._duration = duration;
