@@ -13,7 +13,7 @@ export default class SearchService {
     }
     ytdl.getInfo(track.id.replace('y_',''), {}, (err, info) => {
       if (err) {
-        return failUrl(err);
+        return failUrl && failUrl(err);
       }
       let formats = ytdl.filterFormats(info.formats, 'audio');
       const aacFormat = formats.filter(format =>

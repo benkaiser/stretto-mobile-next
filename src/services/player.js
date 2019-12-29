@@ -8,14 +8,18 @@ import DataService from './dataService';
 import DownloadManager from './DownloadManager';
 import SettingsManager from '../dataAccess/SettingsManager';
 
+const PLACEHOLDER = 'PLACEHOLDER';
+
 class Player {
   constructor() {
     this._listeners = [];
     this._seekTime = 0;
     this._duration = 1;
+    this._currentIndex = 0;
     this._shuffled = false;
-    this._currentTrack = undefined;
     this._unlazifying = false;
+    this._movingNext = true;
+    this._listeningToError = true;
 
     this._eventMappings = {
       'remote-play': this.playPause.bind(this),
@@ -30,13 +34,17 @@ class Player {
     };
 
     Object.keys(this._eventMappings).forEach(key => {
-      TrackPlayer.addEventListener(key, () => {
-        console.log(key);
-        this._eventMappings[key]().catch(error => {
-          console.error(error);
-        }).then(() => {
-          this._writeStateAndEmit.bind(this, key)();
-        });
+      TrackPlayer.addEventListener(key, (code) => {
+        // this._log(key);
+        try {
+          this._eventMappings[key](code).catch(error => {
+            this._log(error);
+          }).then(() => {
+            this._writeStateAndEmit.bind(this, key)();
+          });
+        } catch (error) {
+          this._log('Threw for mapping: ' + key);
+        }
       });
     });
 
@@ -76,10 +84,7 @@ class Player {
   }
 
   get currentTrack() {
-    return this._currentTrack && {
-      ...this._currentTrack,
-      cover: this._currentTrack.artwork
-    };
+    return this._song;
   }
 
   get playlist() {
@@ -110,15 +115,73 @@ class Player {
     }
   }
 
-  addPlaylist(onlyClearedUpcoming) {
-    const indexOfCurrentSong = this._playlist.findIndex(item => {
-      return item && item.id == (this._currentTrack ? this._currentTrack.id : (this._song ? this._song.id : -1))
-    });
-    const songsWithCurrentTrackFirst = this._playlist.slice(indexOfCurrentSong).concat(this._playlist.slice(0, indexOfCurrentSong));
-    if (onlyClearedUpcoming && this._currentTrack && songsWithCurrentTrackFirst.length > 0 && this._currentTrack && this._currentTrack.id == songsWithCurrentTrackFirst[0].id) {
-      songsWithCurrentTrackFirst.shift();
+  _attemptToPlayCurrentSong(startPaused) {
+    this._emitChange();
+    this._log('Attempting to play: ' + this._song.title);
+    if (!this._song) {
+      return;
     }
-    return TrackPlayer.add(songsWithCurrentTrackFirst.map((song) => this._songToTrackPlayerItem(song)));
+    if (this._song.lazy || this._noStreamUrl(this._song)) {
+      this._log('Song is lazy... fetching');
+      return this._queuePlaceholder()
+      .then(() =>  this._unLazifyTrack(this._song))
+      .then((successAndTrackUnchanged) => {
+        return successAndTrackUnchanged &&
+          this._playCurrentTrackUnlazified(startPaused)
+      }
+      ).then(() => {
+        this._emitChange();
+      })
+      .catch((error) => {
+        this._log('Failed on error' + error);
+        this._log(error);
+        this._movingNext ?
+          this.next() :
+          this.previous();
+      });
+    } else {
+      this._log('Song is NOT lazy');
+      this._unlazifying = false;
+      return this._playCurrentTrackUnlazified(startPaused).then(() => {
+        this._emitChange();
+      });
+    }
+  }
+
+  _queuePlaceholder() {
+    if (!this._playTrackLock) {
+      this._playTrackLock = Promise.resolve();
+    }
+    return this._playTrackLock.then(() => {
+      return this._playTrackLock = Promise.resolve()
+      .then(() => {
+        return this._lastPlaceholderTrack ? TrackPlayer.remove([this._lastPlaceholderTrack]) : Promise.resolve();
+      })
+      .then(() => {
+        this._lastPlaceholderTrack = this._songToTrackPlayerItem(this._song, true);
+        return TrackPlayer.add(this._lastPlaceholderTrack)
+      })
+      .then(() => TrackPlayer.pause())
+      .then(() => TrackPlayer.skip(this._lastPlaceholderTrack.id).catch(error => this._log('caught placeholder skip error')));
+    })
+  }
+
+  _playCurrentTrackUnlazified(startPaused) {
+    if (!this._playTrackLock) {
+      this._playTrackLock = Promise.resolve();
+    }
+    return this._playTrackLock.then(() => {
+      return this._playTrackLock = TrackPlayer.add(this._songToTrackPlayerItem(this._song, false))
+      .then(() => TrackPlayer.skip(this._song.id).catch(error => {
+        this._log(error);
+        this._log('caught regular skip error')
+        this._log(this._song);
+        this._songToTrackPlayerItem(this._song, false);
+      }))
+      .then(() => !startPaused && TrackPlayer.play())
+      .then(() => this._listeningToError = true);
+    });
+
   }
 
   playSong(song, playlist, startPaused) {
@@ -126,16 +189,18 @@ class Player {
       return;
     }
     this._originalPlaylist = playlist.slice(0);
-    this._song = song;
-    this._reshufflePlaylistIfNeeded();
-    this._unlazifying = false;
-    if (this._currentTrack && song.id === this._currentTrack.id) {
+    this._reshufflePlaylistIfNeeded(song);
+    if (this._song && song.id === this._song.id) {
+      this._log('Song is the same, ignoring');
       return;
     }
-    this._currentTrack = undefined;
-    TrackPlayer.reset();
-    this.addPlaylist()
-    .then(() => !startPaused && TrackPlayer.play());
+    this._unlazifying = false;
+    this._movingNext = true;
+    this._song = song;
+    this._updateCurrentIndex();
+    this._log('Resetting player');
+    TrackPlayer.reset()
+    .then(() => this._attemptToPlayCurrentSong(startPaused))
     this._writePlayState();
   }
 
@@ -145,7 +210,10 @@ class Player {
   }
 
   playPause() {
-    console.log(this.playing ? 'Pausing' : 'Playing');
+    if (this._unlazifying) {
+      return Promise.resolve();
+    }
+    this._log(this.playing ? 'Pausing' : 'Playing');
     this.playing ? TrackPlayer.pause() : TrackPlayer.play();
     return Promise.resolve();
   }
@@ -166,27 +234,23 @@ class Player {
   }
 
   next() {
+    if (!this._playlist) {
+      return Promise.resolve();
+    }
     this._unlazifying = false;
-    return TrackPlayer.skipToNext().catch(() => {
-      TrackPlayer.getQueue().then(queue => {
-        if (!queue[0]) {
-          return;
-        }
-        TrackPlayer.skip(queue[0].id);
-      });
-    });
+    this._movingNext = true;
+    this._song = this._nextTrackInPlaylist();
+    return this._attemptToPlayCurrentSong(false);
   }
 
   previous() {
+    if (!this._playlist) {
+      return Promise.resolve();
+    }
     this._unlazifying = false;
-    return TrackPlayer.skipToPrevious().catch(() => {
-      TrackPlayer.getQueue().then(queue => {
-        if (!queue[queue.length - 1]) {
-          return;
-        }
-        TrackPlayer.skip(queue[queue.length - 1].id);
-      });
-    });
+    this._movingNext = false;
+    this._song = this._previousTrackInPlaylist();
+    return this._attemptToPlayCurrentSong(false);
   }
 
   _emitChange() {
@@ -195,28 +259,43 @@ class Player {
 
   _reshufflePlaylistIfNeeded() {
     this._playlist = this._shuffled ? Utilities.shuffleArray(this._originalPlaylist.slice(0)) : this._originalPlaylist.slice(0);
-    this._requeueTracks();
     this._updateState().then(() => {
       this._emitChange();
     });
   }
 
-  _requeueTracks() {
-    TrackPlayer.removeUpcomingTracks();
-    this.addPlaylist(true);
+  _updateCurrentIndex() {
+    this._currentIndex = Math.max(this._playlist.findIndex(item => item === this._song), 0);
   }
 
-  _songToTrackPlayerItem(song) {
+  _nextTrackInPlaylist() {
+    this._currentIndex = (this._currentIndex + 1) % this._playlist.length;
+    return this._playlist[this._currentIndex];
+  }
+
+  _previousTrackInPlaylist() {
+    this._currentIndex--;
+    if (this._currentIndex < 0) {
+      this._currentIndex = this._playlist.length - 1;
+    }
+    return this._playlist[this._currentIndex];
+  }
+
+  _songToTrackPlayerItem(song, isPlaceholder) {
     if (!song) {
-      return;
+      return {
+        id: PLACEHOLDER + song.title + song.artist + song.alubm,
+        url: Utilities.urlFor(song),
+        title: 'Placeholder',
+        artist: 'Placeholder'
+      };
     }
     return {
-      id: song.id,
+      id: isPlaceholder ? PLACEHOLDER + song.title + song.artist + song.alubm : song.id,
       url: this._urlFor(song),
       title: song.title,
       artist: song.artist,
-      artwork: song.cover,
-      lazy: song.lazy
+      artwork: song.cover
     };
   }
 
@@ -225,26 +304,28 @@ class Player {
       this._writePlayState();
       this._emitChange();
     } catch (error) {
-      console.error('Error for event type: ' + eventKey);
-      console.error(error);
+      this._log('Error for event type: ' + eventKey);
+      this._log(error);
     }
   }
 
-  _playbackError(event) {
-    console.log('Error with playback, skipping song');
-    const nextTrack = this._nextTrack(this._currentTrack);
-    if (!nextTrack) {
-      return;
+  _playbackError(event, code) {
+    if (this._listeningToError) {
+      this._listeningToError = false;
+      this._log('Error with playback, skipping song');
+      this._log(event);
+      return this._movingNext ?
+        this.next().then(() => this._listeningToError = true) :
+        this.previous().then(() => this._listeningToError = true);
+    } else {
+      return Promise.resolve();
     }
-    return TrackPlayer.skip(nextTrack.id)
-    .then(() => TrackPlayer.play());
   }
 
   _restartQueue() {
-    return TrackPlayer.getQueue()
-    .then(queue => {
-      queue && queue[0] && TrackPlayer.skip(queue[0].id);
-    });
+    this._log('Queue ended, no-op');
+    // return this.next();
+    return Promise.resolve();
   }
 
   _updateState() {
@@ -256,72 +337,74 @@ class Player {
       this._lastState = state;
       this._seekTime = time;
       this._duration = duration;
-    });
+      this._emitChange();
+    }).catch(error => {
+      this._log('Error getting state' + error);
+      /* no-op */
+    })
   }
 
   _updateTrackChanged() {
-    return TrackPlayer.getCurrentTrack()
-    .then(id => TrackPlayer.getTrack(id))
-    .then((track) => {
-      if (!track) {
-        return;
+    return Promise.resolve();
+    // return TrackPlayer.getCurrentTrack()
+    // .then(id => TrackPlayer.getTrack(id))
+    // .then((track) => {
+    //   if (!track) {
+    //     return;
+    //   }
+    //   if (!this._playlistItemForTrack(track)) {
+    //     return;
+    //   }
+    //   if (track && (track.lazy || this._noStreamUrl(track))) {
+    //     this._unLazifyTrack(track);
+    //   } else {
+    //     this._autoDownload(track);
+    //   }
+    //   this._currentTrack = track;
+    //   this._seekTime = 0;
+    // });
+  }
+
+  _noStreamUrl(song) {
+    if (!song || song.id.indexOf('s_') === 0 || OfflineManager.getSongLocation(song)) {
+      return false;
+    }
+    return !song.streamUrl;
+  }
+
+  /**
+   * Unlazify the current song, returns true if the current song hasn't changed whilst unlazifying
+   * Returns false otherwise.
+   * @param {the current song} song
+   */
+  _unLazifyTrack(song) {
+    this._unlazifying = true;
+    const unlazifyingId = this._lazyTrackUniqueId(song);
+    this._emitChange();
+    return this._getIdIfNeeded(song)
+    .then((newId) => {
+      return this._getUrlIfNeeded(song)
+      .then(() => {
+        this._unlazifying = false;
+        // in case the user moved songs while this one was fetching
+        if (unlazifyingId !== this._lazyTrackUniqueId(this._song)) {
+          return false;
+        }
+        return true;
+      });
+    }).catch(error => {
+      this._unlazifying = false;
+      this._log(error);
+      if (unlazifyingId !== this._lazyTrackUniqueId(this._song)) {
+        // swallow the error, the user has moved to another song already
+        return false;
       }
-      if (!this._playlistItemForTrack(track)) {
-        return;
-      }
-      if (track && (track.lazy || this._noStreamUrl(track))) {
-        this._unLazifyTrack(track);
-      } else {
-        this._autoDownload(track);
-      }
-      this._currentTrack = track;
-      this._seekTime = 0;
+      throw error;
     });
   }
 
-  _noStreamUrl(track) {
-    if (!track || track.id.indexOf('s_') === 0 || OfflineManager.getSongLocation(track)) {
-      return false;
-    }
-    const _foundTrack = this._playlistItemForTrack(track);
-    return track.url !== _foundTrack.streamUrl;
-  }
-
-  _unLazifyTrack(track) {
-    if (!this._unlazifying) {
-      TrackPlayer.pause();
-      const unlazifyingId = this._lazyTrackUniqueId(track);
-      this._unlazifying = unlazifyingId;
-      this._getIdIfNeeded(track)
-      .then((newId) => {
-        // in case the user moved songs while this one was fetching
-        if (!this._unlazifying || this._unlazifying !== unlazifyingId) {
-          return;
-        }
-        return this._getUrlIfNeeded(track)
-        .then(() => {
-          // in case the user moved songs while this one was fetching
-          if (!this._unlazifying || this._unlazifying !== unlazifyingId) {
-            return;
-          }
-          TrackPlayer.reset()
-          .then(() => this.addPlaylist())
-          .then(() => TrackPlayer.skip(newId))
-          .then(() => {
-            this._unlazifying = false;
-            return TrackPlayer.play();
-          });
-        });
-      }).catch(error => {
-        this._unlazifying = false;
-        this.next().then(() => TrackPlayer.play());
-        console.error(error);
-      });
-    }
-  }
-
   _lazyTrackUniqueId(track) {
-    return track.id + track.title;
+    return track.title + track.artist + track.album;
   }
 
   _getIdIfNeeded(track) {
@@ -338,14 +421,15 @@ class Player {
         }
         return item;
       });
-      this._song && (this._song.id = newId);
+      // this._song && (this._song.id = newId);
+      // this._song && (this._song.lazy = false);
+      track.lazy = false;
       track.id = newId;
       return newId;
     });
   }
 
   _getUrlIfNeeded(track) {
-    console.log(track);
     if (!this._noStreamUrl(track)) {
       return Promise.resolve(track.url);
     }
@@ -357,7 +441,7 @@ class Player {
         }
         return item;
       });
-      this._song && (this._song.streamUrl = url);
+      // this._song && (this._song.streamUrl = url);
       track.streamUrl = url;
       return url;
     });
@@ -372,7 +456,7 @@ class Player {
       return;
     }
     AsyncStorage.setItem('PLAY_STATE', JSON.stringify({
-      track: this.currentTrack ? this.currentTrack : this._song,
+      track: this._song,
       playlistItems: this._originalPlaylist,
       playing: this.playing,
       shuffled: this._shuffled
@@ -403,20 +487,28 @@ class Player {
     if (alreadyDownloaded) {
       return;
     }
-    console.log('Auto-downloading track');
-    console.log(fullDetails);
+    this._log('Auto-downloading track');
+    this._log(fullDetails);
     return DownloadManager.downloadSong(fullDetails);
   }
 
   _urlFor(song) {
+    console.log('Getting song url for: ' + song.title);
     const offlinePath = OfflineManager.getSongLocation(song);
     if (offlinePath) {
+      console.log('Offline path: ' + offlinePath);
       return 'file://' + offlinePath;
     } else {
       if (song.streamUrl) {
         return song.streamUrl;
       }
       return Utilities.urlFor(song);
+    }
+  }
+
+  _log(message) {
+    if (__DEV__) {
+      console.log(message);
     }
   }
 }

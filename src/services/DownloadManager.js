@@ -22,11 +22,11 @@ export class DownloadManager {
   downloadSong(song) {
     ToastAndroid.show('Starting download for ' + song.title, ToastAndroid.SHORT);
     return this._requestPermissionsAndMakeDir()
-    .then(() =>
+    .then(() => {
       this._downloadSong(song).then(() => {
         ToastAndroid.show('Completed download for ' + song.title, ToastAndroid.SHORT);
       })
-    );
+    });
   }
 
   _scheduleDownloads(songs) {
@@ -63,6 +63,7 @@ export class DownloadManager {
     if (song.id.indexOf('s_') === 0 || song.streamUrl) {
       promise = Promise.resolve(Utilities.urlFor(song));
     } else {
+      console.log('Getting youtube audio url');
       promise = UrlService.getYoutubeAudioUrl(song).then()
     }
     return promise.then((url) => {
@@ -77,7 +78,8 @@ export class DownloadManager {
         console.log('The file saved to ', res.path())
       });
     }).catch((error) => {
-      ToastAndroid.show(`Error downloading: ${song.title}. ${error}`);
+      ToastAndroid.show(`Error downloading: ${song.title}`, ToastAndroid.SHORT);
+      console.log(error.Error);
     });
   }
 

@@ -75,7 +75,7 @@ class Track extends BaseView {
               <Text style={styles.albumArtist}>{this._artist()}</Text>
             </TouchableOpacity>
             { this._album() ? <Text key='spacer' style={styles.artistSpacer}> - </Text> : undefined }
-            
+
             { this._album() ?
               <TouchableOpacity key='album' onPress={this._onPress.bind(this, this._album())}>
                 <Text style={styles.albumArtist}>{this._album()}</Text>
@@ -86,7 +86,7 @@ class Track extends BaseView {
         <View style={styles.controls}>
           <Icon key='shuffle' iconStyle={[styles.icon, shuffleStyles]} name='random' onPress={Player.toggleShuffle.bind(Player)} />
           <Icon key='previous' iconStyle={styles.icon} name='step-backward' onPress={this._previous.bind(this)} />
-          { this.state.buffering ? 
+          { this.state.buffering ?
             <ActivityIndicator key='buffer' style={styles.buffer} size='large' />
             : <Icon key='playPause' iconStyle={styles.largeIcon} name={this.state.playing ? 'pause' : 'play'} onPress={this._onPlayPause.bind(this)} />
           }
@@ -128,17 +128,10 @@ class Track extends BaseView {
     if (Player.currentTrack && this._title() !== Player.currentTrack.title) {
       this.props.navigation.setParams({ title: Player.currentTrack.title });
     }
-    const currentTrackModified = { ...Player.currentTrack };
-    if (Player.currentTrack) {
-      const matchedSongs = PlaylistWrapper.getSongs().filter(song => Player.currentTrack && song && song.id === Player.currentTrack.id);
-      if (matchedSongs && matchedSongs[0]) {
-        currentTrackModified.album = matchedSongs[0].album;
-      }
-    }
     this.setState({
       playing: Player.playing,
       buffering: Player.buffering,
-      currentTrack: currentTrackModified,
+      currentTrack: Player.currentTrack,
       seekTime: Player.seekTime,
       duration: Player.duration,
       shuffled: Player.shuffled

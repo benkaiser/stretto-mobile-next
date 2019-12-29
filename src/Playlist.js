@@ -45,10 +45,8 @@ export default class Playlist extends BaseListView {
     const options = [];
     const optionsMethods = [];
     if (DataService.isSongInLibrary(item)) {
-      if (!this._isOffline(item)) {
-        options.push('Download');
-        optionsMethods.push(this._startDownload.bind(this, item));
-      }
+      options.push(this._isOffline(item) ? 'Download again' : 'Download');
+      optionsMethods.push(this._startDownload.bind(this, item));
     } else {
       options.push('Add to Library');
       optionsMethods.push(this._addToLibrary.bind(this, item));
@@ -96,7 +94,7 @@ export default class Playlist extends BaseListView {
       playlistItems: this.state.songs
     });
   }
-  
+
   _startDownload(item) {
     DownloadManager.downloadSong(item).then(() => {
       this.forceUpdate();
