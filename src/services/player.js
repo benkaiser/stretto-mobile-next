@@ -19,7 +19,7 @@ class Player {
     this._shuffled = false;
     this._unlazifying = false;
     this._movingNext = true;
-    this._listeningToError = true;
+    this._listeningToErrorAndEnd = true;
 
     this._eventMappings = {
       'remote-play': this.playPause.bind(this),
@@ -152,6 +152,7 @@ class Player {
     if (!this._playTrackLock) {
       this._playTrackLock = Promise.resolve();
     }
+    this._listeningToErrorAndEnd = false;
     return this._playTrackLock.then(() => {
       return this._playTrackLock = Promise.resolve()
       .then(() => {
@@ -163,7 +164,7 @@ class Player {
       })
       .then(() => TrackPlayer.pause())
       .then(() => TrackPlayer.skip(this._lastPlaceholderTrack.id).catch(error => this._log('caught placeholder skip error')));
-    })
+    });
   }
 
   _playCurrentTrackUnlazified(startPaused) {
@@ -179,7 +180,7 @@ class Player {
         this._songToTrackPlayerItem(this._song, false);
       }))
       .then(() => !startPaused && TrackPlayer.play())
-      .then(() => this._listeningToError = true);
+      .then(() => this._listeningToErrorAndEnd = true);
     });
 
   }
@@ -310,13 +311,13 @@ class Player {
   }
 
   _playbackError(event, code) {
-    if (this._listeningToError) {
-      this._listeningToError = false;
+    if (this._listeningToErrorAndEnd) {
+      this._listeningToErrorAndEnd = false;
       this._log('Error with playback, skipping song');
       this._log(event);
       return this._movingNext ?
-        this.next().then(() => this._listeningToError = true) :
-        this.previous().then(() => this._listeningToError = true);
+        this.next().then(() => this._listeningToErrorAndEnd = true) :
+        this.previous().then(() => this._listeningToErrorAndEnd = true);
     } else {
       return Promise.resolve();
     }
@@ -336,7 +337,8 @@ class Player {
     ]).then(([state, time, duration]) => {
       // because we don't put our songs in the queue, we have to manually detect when playback
       // stops at the end of a song and move forward
-      if (this._lastState !== State.Stopped && state == State.Stopped && time >= duration) {
+      if (this._lastState !== State.Stopped && state == State.Stopped && time >= duration && this._listeningToErrorAndEnd) {
+        this._log('Detected end of song, skipping');
         this.next();
       }
       this._lastState = state;
