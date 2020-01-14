@@ -29,6 +29,9 @@ export default class DataService {
     if (!song) {
       return;
     }
+    // ensure we aren't modifying the original
+    song = { ...song };
+    delete song.streamUrl;
     return fetch(Config.BASE_URL + '/addsong', {
       credentials: 'same-origin',
       method: 'POST',
