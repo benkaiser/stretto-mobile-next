@@ -4,7 +4,7 @@ Stretto Android
 
 ![screenshot](https://user-images.githubusercontent.com/608054/51808440-912ac600-2248-11e9-9a21-3fccf4a74008.png)
 
-Go to the [releases](https://github.com/benkaiser/stretto-mobile-next/releases) page to download the latest version.
+To have the app auto-update, you can install it from the [play store](https://play.google.com/store/apps/details?id=com.strettomobilenext.release), alternatively you can find the latest committed build available for download [here](https://github.com/benkaiser/stretto-mobile-next/raw/master/android/app/build/outputs/apk/release/app-release.apk).
 
 ### Developer
 
