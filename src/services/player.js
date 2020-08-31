@@ -17,9 +17,11 @@ class Player {
     this._duration = 1;
     this._currentIndex = 0;
     this._shuffled = false;
+    this._repeat = false;
     this._unlazifying = false;
     this._movingNext = true;
     this._listeningToErrorAndEnd = true;
+    this._subscriptions = [];
 
     this._eventMappings = {
       'remote-play': this.playPause.bind(this),
@@ -34,7 +36,7 @@ class Player {
     };
 
     Object.keys(this._eventMappings).forEach(key => {
-      TrackPlayer.addEventListener(key, (arg) => {
+      this._subscriptions.push(TrackPlayer.addEventListener(key, (arg) => {
         // this._log(key);
         try {
           this._eventMappings[key](arg).catch(error => {
@@ -45,7 +47,7 @@ class Player {
         } catch (error) {
           this._log('Threw for mapping: ' + key);
         }
-      });
+      }));
     });
 
     TrackPlayer.setupPlayer({}).then(() => {
@@ -101,6 +103,10 @@ class Player {
 
   get shuffled() {
     return this._shuffled;
+  }
+
+  get repeat() {
+    return this._repeat;
   }
 
   get duration() {
@@ -172,7 +178,8 @@ class Player {
       this._playTrackLock = Promise.resolve();
     }
     return this._playTrackLock.then(() => {
-      return this._playTrackLock = TrackPlayer.add(this._songToTrackPlayerItem(this._song, false))
+      return this._playTrackLock = TrackPlayer.reset()
+      .then(() => TrackPlayer.add(this._songToTrackPlayerItem(this._song, false)))
       .then(() => TrackPlayer.skip(this._song.id).catch(error => {
         this._log(error);
         this._log('caught regular skip error')
@@ -182,7 +189,10 @@ class Player {
       .then(() => !startPaused && TrackPlayer.play())
       .then(() => this._listeningToErrorAndEnd = true);
     });
+  }
 
+  _restartTrack() {
+    return this.seekToFraction(0);
   }
 
   playSong(song, playlist, startPaused) {
@@ -221,6 +231,7 @@ class Player {
 
   restoreFromState(state) {
     this._shuffled = state.shuffled || false;
+    this._repeat = state.repeat || false;
     this.playSong(state.track, state.playlistItems, state.playing == false);
   }
 
@@ -234,7 +245,16 @@ class Player {
     this._reshufflePlaylistIfNeeded();
   }
 
+  toggleRepeat() {
+    this._repeat = !this._repeat;
+    this._writeStateAndEmit();
+  }
+
   next() {
+    if (this._repeat) {
+      this._seekTime = 0;
+      return this._restartTrack();
+    }
     if (!this._playlist) {
       return Promise.resolve();
     }
@@ -245,6 +265,10 @@ class Player {
   }
 
   previous() {
+    if (this._repeat) {
+      this._seekTime = 0;
+      return this._restartTrack(false);
+    }
     if (!this._playlist) {
       return Promise.resolve();
     }
@@ -352,24 +376,23 @@ class Player {
   }
 
   _updateTrackChanged() {
-    return Promise.resolve();
-    // return TrackPlayer.getCurrentTrack()
-    // .then(id => TrackPlayer.getTrack(id))
-    // .then((track) => {
-    //   if (!track) {
-    //     return;
-    //   }
-    //   if (!this._playlistItemForTrack(track)) {
-    //     return;
-    //   }
-    //   if (track && (track.lazy || this._noStreamUrl(track))) {
-    //     this._unLazifyTrack(track);
-    //   } else {
-    //     this._autoDownload(track);
-    //   }
-    //   this._currentTrack = track;
-    //   this._seekTime = 0;
-    // });
+    return TrackPlayer.getCurrentTrack()
+    .then(id => TrackPlayer.getTrack(id))
+    .then((track) => {
+      if (!track) {
+        return;
+      }
+      const newTrack = this._playlistItemForTrack(track);
+      if (newTrack) {
+        this._song = this._playlistItemForTrack(track);
+      }
+      this._seekTime = 0;
+      TrackPlayer.getDuration()
+      .then(duration => {
+        this._duration = duration;
+        this._emitChange();
+      });
+    });
   }
 
   _noStreamUrl(song) {
@@ -466,7 +489,8 @@ class Player {
       track: this._song,
       playlistItems: this._originalPlaylist,
       playing: this.playing,
-      shuffled: this._shuffled
+      shuffled: this._shuffled,
+      repeat: this._repeat
     }));
   }
 
@@ -518,6 +542,21 @@ class Player {
       console.log(message);
     }
   }
+
+  _dispose() {
+    this._subscriptions.forEach(subscription => {
+      subscription.remove();
+    });
+    this._listeners = [];
+  }
 }
 
-export default new Player();
+const player = new Player();
+
+if (module.hot) {
+  module.hot.dispose(() => {
+    player._dispose();
+  });
+}
+
+export default player;

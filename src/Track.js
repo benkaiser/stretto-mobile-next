@@ -27,6 +27,7 @@ class Track extends BaseView {
       buffering: Player.buffering,
       playing: Player.playing,
       shuffled: Player.shuffled,
+      repeat: Player.repeat,
       seekTime: 0,
       duration: 0
     };
@@ -46,6 +47,10 @@ class Track extends BaseView {
     let shuffleStyles = {};
     if (this.state.shuffled) {
       shuffleStyles.color = this.props.theme.palette.primaryColor;
+    }
+    let repeatStyles = {};
+    if (this.state.repeat) {
+      repeatStyles.color = this.props.theme.palette.primaryColor;
     }
 
     const config = {
@@ -91,7 +96,7 @@ class Track extends BaseView {
             : <Icon key='playPause' iconStyle={styles.largeIcon} name={this.state.playing ? 'pause' : 'play'} onPress={this._onPlayPause.bind(this)} />
           }
           <Icon key='next' iconStyle={styles.icon} name='step-forward' onPress={this._next.bind(this)} />
-          <Icon key='repeat' iconStyle={styles.icon} name='retweet' onPress={() => {}} />
+          <Icon key='repeat' iconStyle={[styles.icon, repeatStyles]} name='retweet' onPress={Player.toggleRepeat.bind(Player)} />
         </View>
         <View style={styles.sliderContainer}>
           <Slider style={styles.slider} step={0.001} minimumValue={0} maximumValue={1} value={this.state.duration !== 0 ? this.state.seekTime / this.state.duration : 0} onValueChange={this._onSlide.bind(this)} />
@@ -134,7 +139,8 @@ class Track extends BaseView {
       currentTrack: Player.currentTrack,
       seekTime: Player.seekTime,
       duration: Player.duration,
-      shuffled: Player.shuffled
+      shuffled: Player.shuffled,
+      repeat: Player.repeat
     });
     this._autoIncrementTimer && clearInterval(this._autoIncrementTimer);
     if (Player.playing) {
